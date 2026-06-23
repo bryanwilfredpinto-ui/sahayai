@@ -1,0 +1,89 @@
+"""
+database.py
+-----------
+SQLAlchemy engine + session factory for the Chitti Government backend.
+
+Per SAHAYAI_MASTER.md §2 row 3 (LOCKED, REVISED 2026-05-29): writes MUST land
+on Turso REMOTE. The earlier embedded-replica pattern wrote to
+/tmp/chitti_government.db via stdlib sqlite3; sync to Turso failed with
+wal_insert_begin; Railway restart wiped /tmp.
+
+Replacement: direct HTTPS via lib.turso_http (PEP-249 shim talking to
+/v2/pipeline). Plugged into SQLAlchemy via create_engine(..., creator=...).
+No local file. No background sync. No /tmp.
+
+URL shapes:
+  - libsql://<host>?authToken=<token>   (Turso, production; direct HTTPS)
+  - sqlite:///path/to/file.db           (local dev)
+  - postgresql://... or postgres://...  (legacy; remove after migration)
+"""
+from __future__ import annotations
+
+import logging
+import urllib.parse
+
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.pool import NullPool
+
+from config import settings
+
+log = logging.getLogger("database")
+
+
+def _parse_libsql_url(raw: str) -> tuple[str, str]:
+    parsed = urllib.parse.urlparse(raw)
+    qs = urllib.parse.parse_qs(parsed.query)
+    token = (qs.get("authToken") or [""])[0]
+    return parsed.netloc, token
+
+
+def _build_libsql_engine(raw: str) -> Engine:
+    from lib import turso_http
+
+    host, token = _parse_libsql_url(raw)
+    if not token:
+        log.warning("libsql URL for %s has no authToken — Turso will reject the connection", host)
+
+    def _creator():
+        return turso_http.connect(host=host, token=token)
+
+    log.info("Opening Turso engine via direct HTTPS: host=%s pool=NullPool", host)
+    return create_engine(
+        "sqlite://",
+        creator=_creator,
+        module=turso_http,
+        poolclass=NullPool,
+    )
+
+
+def _build_engine(raw: str) -> Engine:
+    if raw.startswith("libsql://"):
+        return _build_libsql_engine(raw)
+    if raw.startswith("postgres://"):
+        raw = raw.replace("postgres://", "postgresql://", 1)
+
+    connect_args: dict = {}
+    if raw.startswith("sqlite"):
+        connect_args = {"check_same_thread": False}
+    return create_engine(raw, connect_args=connect_args, pool_pre_ping=True)
+
+
+engine: Engine = _build_engine(settings.DATABASE_URL)
+db_url = str(engine.url)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def sync_now() -> None:
+    """No-op. Retained for backward compatibility with the embedded-replica era."""
+    return None

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-jobs/ -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chitti Jobs · Your 24/7 AI career agent — fresher to CXO</title>
+  <meta name="description" content="Chitti Jobs — India's voice-first AI career agent. Knows you, scores every job to your profile, drafts applications in your voice, and tracks your pipeline. You approve and send everything. Free, 24/7." />
+  <meta name="theme-color" content="#002366" />
+  <meta name="chitti-features" content="chitti-jobs/skills/FEATURES.md" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E💼%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="sahayai_design_system.css">
+  <link rel="stylesheet" href="chitti_theme.css">
+  <style>
+    :root{ --saffron:#E86A17; --navy:#002366; --gold:#D4AF37; --bg:#F7F7F4; --card:#fff;
+           --text:#17202a; --muted:#5b6473; --border:#e5e7eb; --green:#15803d; --red:#b91c1c; --amber:#a16207; }
+    button,.btn,input:not([type=checkbox]):not([type=radio]),select,textarea,a.btn{min-height:48px}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#F7F7F4;color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:18px;line-height:1.55}
+    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .bharat-stripe{height:6px;background:linear-gradient(90deg,#FF6913 0 33.3%,#FFFFFF 33.3% 66.6%,#046A38 66.6% 100%)}
+    main{max-width:680px;margin:0 auto;padding:14px 14px 120px}
+
+    .jobs-bar{position:sticky;top:0;z-index:50;background:linear-gradient(90deg,rgba(232,106,23,.14),rgba(212,175,55,.10));border-bottom:2px solid #D4AF37;padding:9px 14px;font-size:13px;line-height:1.45;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .jobs-bar b{color:var(--navy)}
+
+    header.app{background:linear-gradient(135deg,#002366,#16376a);color:#fff;border-radius:0 0 18px 18px;padding:16px 16px 18px}
+    header.app .brand{display:flex;align-items:center;gap:12px}
+    header.app .logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--saffron),var(--gold));display:flex;align-items:center;justify-content:center;font-size:26px}
+    header.app h1{font-size:22px;margin:0;font-weight:900}
+    header.app .tag{font-size:13px;opacity:.85;margin-top:2px}
+    .vaani-note{margin-top:10px;font-size:13px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:8px 12px}
+    .vaani-note a{color:#ffd79a;font-weight:700}
+
+    .tabs{display:flex;gap:6px;margin:14px 0;overflow-x:auto}
+    .tabs button{flex:0 0 auto;background:#fff;border:1.5px solid var(--border);color:var(--navy);border-radius:999px;padding:10px 16px;font-size:14.5px;font-weight:700;cursor:pointer}
+    .tabs button.active{background:linear-gradient(135deg,#002366,#16376a);color:#fff;border-color:#002366}
+    .panel{display:none}.panel.active{display:block}
+
+    .card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px;margin:0 0 14px;box-shadow:0 4px 12px rgba(0,0,0,.04)}
+    .card h2{font-size:19px;color:var(--navy);margin:0 0 4px}
+    .card .sub{font-size:14px;color:var(--muted);margin:0 0 12px}
+    label.f{display:block;font-size:14px;font-weight:700;color:var(--navy);margin:10px 0 4px}
+    input.f,select.f,textarea.f{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit}
+    textarea.f{min-height:120px;resize:vertical}
+    .row{display:flex;gap:10px;flex-wrap:wrap}.row > *{flex:1;min-width:140px}
+    .btn-primary{background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:800;cursor:pointer;width:100%}
+    .btn-ghost{background:#fff;border:1.5px solid var(--border);color:var(--navy);border-radius:12px;padding:12px;font-weight:700;cursor:pointer}
+    .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:800}
+    .pill.green{background:#dcfce7;color:#14532d}.pill.amber{background:#fef3c7;color:#78350f}.pill.navy{background:#e6ecff;color:#002366}
+    .score{font-size:30px;font-weight:900;color:var(--navy);line-height:1}
+    .muted{color:var(--muted);font-size:13.5px}
+    .reasons{font-size:13.5px;color:#334;margin:8px 0 0;padding-left:18px}
+    .draftbox{margin-top:10px;background:#f8fafc;border:1.5px dashed var(--border);border-radius:10px;padding:12px;white-space:pre-wrap;font-size:14.5px}
+    .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.actions > *{flex:1;min-width:120px}
+    .empty{text-align:center;color:var(--muted);padding:24px}
+    .gate{background:#fff8e1;border:1.5px solid var(--amber);border-radius:10px;padding:12px;font-size:14px;margin-top:10px}
+    .kbcol h3{font-size:14px;color:var(--navy);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+    .level-badge{display:inline-block;background:var(--gold);color:#3a2a00;font-weight:800;border-radius:8px;padding:4px 10px;font-size:13px;margin-top:6px}
+    a.maillink{display:block;text-align:center;background:var(--green);color:#fff;border-radius:10px;padding:13px;font-weight:800;text-decoration:none;margin-top:8px}
+  </style>
+</head>
+<body>
+<div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#002366;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px">
+  <label for="lang-select" style="font-weight:600">🌐</label>
+  <select id="lang-select" aria-label="Language" style="background:#fff;color:#002366;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
+    <option value="en">English</option><option value="hi">हिन्दी</option>
+  </select>
+</div>
+
+<div class="bharat-stripe"></div>
+
+<div class="jobs-bar" role="region" aria-label="Chitti Jobs disclaimer">
+  💼 <span><b>Chitti Jobs is your career assistant — not your employer.</b> Chitti drafts; <b>you approve and send everything yourself</b>. Chitti never fabricates experience, never auto-applies, never shares your profile. Free, 24/7.</span>
+</div>
+
+<header class="app">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">💼</div>
+    <div>
+      <h1>Chitti Jobs</h1>
+      <div class="tag">Your 24/7 AI career agent — fresher to CXO</div>
+    </div>
+  </div>
+  <div class="vaani-note">🎙️ This is the developer/debug surface. The way you actually use Chitti Jobs is by asking <a href="chitti_vaani.html">Chitti Vaani</a> — "Chitti, koi naukri dhoondo" — Vaani routes here for you.</div>
+</header>
+
+<main>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="setup" role="tab">1 · Setup</button>
+    <button class="tab" data-tab="find" role="tab">2 · Find jobs</button>
+    <button class="tab" data-tab="digest" role="tab">3 · Today's matches</button>
+    <button class="tab" data-tab="pipeline" role="tab">4 · My pipeline</button>
+  </nav>
+
+  <!-- ── SETUP (BO2 + BO3) ── -->
+  <section class="panel active" id="panel-setup">
+    <div class="card" data-chitti-response="jobs-setup">
+      <h2>Tell Chitti about you (once)</h2>
+      <p class="sub">Chitti remembers this on your device so it already knows you next time. Nothing is saved until you tick consent. Your profile is never shared with other users.</p>
+      <label class="f" for="f-name">Your name</label>
+      <input class="f" id="f-name" placeholder="e.g. Asha Verma">
+      <div class="row">
+        <div><label class="f" for="f-exp">Years of experience</label><input class="f" id="f-exp" type="number" min="0" step="0.5" placeholder="8"></div>
+        <div><label class="f" for="f-sit">Situation</label>
+          <select class="f" id="f-sit">
+            <option value="actively_hunting">Actively hunting</option>
+            <option value="passively_open">Passively open</option>
+            <option value="career_change">Career change</option>
+            <option value="returning">Returning after a break</option>
+            <option value="laid_off">Recently laid off</option>
+            <option value="fresher">Fresher (first job)</option>
+          </select>
+        </div>
+      </div>
+      <label class="f" for="f-role">Current / most recent role</label>
+      <input class="f" id="f-role" placeholder="e.g. Data Analyst">
+      <label class="f" for="f-troles">Target roles (comma separated)</label>
+      <input class="f" id="f-troles" placeholder="Data Analyst, Senior Data Analyst">
+      <div class="row">
+        <div><label class="f" for="f-locs">Target locations</label><input class="f" id="f-locs" placeholder="Bangalore, Remote"></div>
+        <div><label class="f" for="f-inds">Target industries</label><input class="f" id="f-inds" placeholder="fintech, SaaS"></div>
+      </div>
+      <div class="row">
+        <div><label class="f" for="f-sal">Salary expectation</label><input class="f" id="f-sal" placeholder="e.g. 18 LPA"></div>
+        <div><label class="f" for="f-work">Work type</label>
+          <select class="f" id="f-work"><option value="any">Any</option><option value="wfh">Remote</option><option value="hybrid">Hybrid</option><option value="office">Office</option></select>
+        </div>
+      </div>
+      <label class="f" for="f-li">LinkedIn URL (optional)</label>
+      <input class="f" id="f-li" placeholder="https://linkedin.com/in/...">
+      <label class="f" for="f-resume">Paste your resume / background (powers ATS scoring + drafting)</label>
+      <textarea class="f" id="f-resume" placeholder="Paste your resume text here. Chitti never invents anything — it only uses what you provide."></textarea>
+      <label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:14px"><input type="checkbox" id="f-consent" style="width:20px;height:20px;margin-top:2px"> <span>Yes, save this profile on my device so Chitti remembers me (you can wipe it anytime). Required to continue.</span></label>
+      <div style="margin-top:14px"><button class="btn-primary" id="save-profile">💾 Save my profile</button></div>
+      <div id="setup-result" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <!-- ── FIND (BO4) ── -->
+  <section class="panel" id="panel-find">
+    <div class="card" data-chitti-response="jobs-manual">
+      <h2>Paste a job → Chitti scores it</h2>
+      <p class="sub">Found a role on any site? Paste the job description here. Chitti scores it 1–10 against your profile and runs an ATS keyword check. (We don't scrape sites — you paste, we analyse.)</p>
+      <div class="row">
+        <div><label class="f" for="m-title">Job title</label><input class="f" id="m-title" placeholder="Data Analyst"></div>
+        <div><label class="f" for="m-co">Company</label><input class="f" id="m-co" placeholder="Acme"></div>
+      </div>
+      <div class="row">
+        <div><label class="f" for="m-loc">Location</label><input class="f" id="m-loc" placeholder="Bangalore"></div>
+        <div><label class="f" for="m-url">Job URL (optional)</label><input class="f" id="m-url" placeholder="https://..."></div>
+      </div>
+      <label class="f" for="m-jd">Job description (paste the full JD)</label>
+      <textarea class="f" id="m-jd" placeholder="Paste the full job description here..."></textarea>
+      <div style="margin-top:12px"><button class="btn-primary" id="score-manual">🎯 Score this job</button></div>
+      <div id="manual-result" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h2>Auto-find from job feeds</h2>
+      <p class="sub">Chitti can also pull recent listings from Naukri &amp; Indeed RSS for your top target role. Feeds are best-effort — if a publisher's feed is quiet, use paste above.</p>
+      <button class="btn-ghost" id="run-source" style="width:100%">🔄 Fetch new jobs from feeds now</button>
+      <div id="source-result" style="margin-top:10px" class="muted"></div>
+    </div>
+  </section>
+
+  <!-- ── DIGEST (BO9) ── -->
+  <section class="panel" id="panel-digest">
+    <div class="card">
+      <h2>Today's matches (score 7+)</h2>
+      <p class="sub">Only strong matches are shown — quality over volume. Tap <b>Apply</b> and Chitti drafts the email in your voice; you review and send it yourself.</p>
+      <button class="btn-ghost" id="load-digest" style="width:100%">↻ Refresh my matches</button>
+    </div>
+    <div id="digest-list"></div>
+  </section>
+
+  <!-- ── PIPELINE (BO10) ── -->
+  <section class="panel" id="panel-pipeline">
+    <div class="card">
+      <h2>My application pipeline</h2>
+      <p class="sub">Every application Chitti helped you with — nothing falls through the cracks.</p>
+      <button class="btn-ghost" id="load-pipeline" style="width:100%">↻ Refresh pipeline</button>
+      <div id="pipeline-counts" class="muted" style="margin-top:8px"></div>
+    </div>
+    <div id="pipeline-list"></div>
+  </section>
+</main>
+
+<script src="feedback-widget.js" data-page="chitti_jobs"></script>
+<script src="chitti_a11y.js?v=20260529r"></script>
+<script>
+const API = window.CHITTI_JOBS_API || "https://chitti-jobs-api.up.railway.app";
+
+// Device identity (X-User-Token) — shared with the Memory OS convention.
+function uid(){
+  let id = localStorage.getItem("sahay_device_id");
+  if(!id){ id = (crypto.randomUUID ? crypto.randomUUID() : "uid-"+Date.now()+"-"+Math.random().toString(16).slice(2)); localStorage.setItem("sahay_device_id", id); }
+  return id;
+}
+const H = () => ({ "Content-Type":"application/json", "X-User-Token": uid() });
+async function api(path, opts={}){
+  const r = await fetch(API+path, { headers:H(), ...opts });
+  let j=null; try{ j=await r.json(); }catch(e){}
+  return { ok:r.ok, status:r.status, j };
+}
+const $ = id => document.getElementById(id);
+const esc = s => (s||"").replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const csv = v => (v||"").split(",").map(x=>x.trim()).filter(Boolean);
+
+// Tabs
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); $("panel-"+b.dataset.tab).classList.add("active");
+  if(b.dataset.tab==="digest") loadDigest();
+  if(b.dataset.tab==="pipeline") loadPipeline();
+}));
+
+// ── BO2/BO3 save profile ──
+$("save-profile").addEventListener("click", async ()=>{
+  if(!$("f-consent").checked){ $("setup-result").innerHTML='<div class="gate">Please tick consent so Chitti can remember you.</div>'; return; }
+  $("save-profile").disabled=true; $("save-profile").textContent="Saving…";
+  const body = {
+    name:$("f-name").value, experience_years: parseFloat($("f-exp").value)||0,
+    current_role:$("f-role").value, target_roles:csv($("f-troles").value),
+    target_locations:csv($("f-locs").value), target_industries:csv($("f-inds").value),
+    salary_expectation:$("f-sal").value, work_type:$("f-work").value,
+    career_situation:$("f-sit").value, linkedin_url:$("f-li").value,
+    resume_text:$("f-resume").value, consent:true,
+  };
+  const {ok,j} = await api("/api/jobs/profile",{method:"POST",body:JSON.stringify(body)});
+  $("save-profile").disabled=false; $("save-profile").textContent="💾 Save my profile";
+  if(ok){ $("setup-result").innerHTML=`<div class="pill green">✓ Saved</div> <span class="level-badge">Chitti sees you as: ${esc(j.user_level)}</span><p class="muted" style="margin-top:8px">Chitti now knows you. Go to <b>Find jobs</b> or <b>Today's matches</b>.</p>`; }
+  else { $("setup-result").innerHTML='<div class="gate">Could not save. Is the backend reachable?</div>'; }
+});
+
+// ── BO4 manual paste ──
+$("score-manual").addEventListener("click", async ()=>{
+  const jd=$("m-jd").value.trim();
+  if(!jd){ $("manual-result").innerHTML='<div class="gate">Paste the job description first.</div>'; return; }
+  $("score-manual").disabled=true; $("score-manual").textContent="Scoring…";
+  const {ok,j,status} = await api("/api/jobs/manual",{method:"POST",body:JSON.stringify({
+    jd_text:jd, title:$("m-title").value, company:$("m-co").value, location:$("m-loc").value, url:$("m-url").value })});
+  $("score-manual").disabled=false; $("score-manual").textContent="🎯 Score this job";
+  if(status===400 && !ok){ $("manual-result").innerHTML='<div class="gate">Please paste a job description.</div>'; return; }
+  if(ok && j.job){ $("manual-result").innerHTML = jobCard(j.job, true); wireApply($("manual-result")); }
+  else { $("manual-result").innerHTML='<div class="gate">Set up your profile first (Setup tab).</div>'; }
+});
+
+// ── BO4 RSS source ──
+$("run-source").addEventListener("click", async ()=>{
+  $("run-source").disabled=true; $("run-source").textContent="Fetching…";
+  const {ok,j,status} = await api("/api/jobs/source",{method:"POST",body:"{}"});
+  $("run-source").disabled=false; $("run-source").textContent="🔄 Fetch new jobs from feeds now";
+  if(status===409){ $("source-result").textContent="Set up your profile first (Setup tab)."; return; }
+  if(ok){ const f=(j.source.feeds||[]).map(x=>`${x.source}: ${x.got}${x.error?" (feed quiet)":""}`).join(" · ");
+          $("source-result").innerHTML=`Added <b>${j.source.inserted}</b> new listings · scored ${j.score.scored}, ${j.score.surfaced} strong matches.<br><span class="muted">${esc(f)}</span><br>See <b>Today's matches</b>.`; }
+  else { $("source-result").textContent="Could not fetch right now."; }
+});
+
+// ── BO9 digest ──
+async function loadDigest(){
+  $("digest-list").innerHTML='<div class="empty">Loading…</div>';
+  const {ok,j} = await api("/api/jobs/digest");
+  if(!ok){ $("digest-list").innerHTML='<div class="empty">Set up your profile first (Setup tab).</div>'; return; }
+  if(!j.jobs.length){ $("digest-list").innerHTML='<div class="empty">No strong matches yet. Paste a job in <b>Find jobs</b> or fetch from feeds.</div>'; return; }
+  $("digest-list").innerHTML = j.jobs.map(x=>jobCard(x,false)).join("");
+  wireApply($("digest-list"));
+}
+$("load-digest").addEventListener("click", loadDigest);
+
+function jobCard(x, fromManual){
+  const ats = x.ats_match_pct!=null ? `<span class="pill ${x.ats_match_pct>=70?'green':'amber'}">ATS ${x.ats_match_pct}%</span>` : "";
+  const reasons = ((x.reasons&&x.reasons.score_breakdown)||[]).map(r=>`<li>${esc(r.reason)} (${r.delta>0?'+':''}${r.delta})</li>`).join("");
+  return `<div class="card" data-chitti-response="job-${x.scored_id}" data-scored="${x.scored_id}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+      <div><h2 style="margin-bottom:2px">${esc(x.title||"Job")}</h2>
+        <div class="muted">${esc(x.company||"")} ${x.location?("· "+esc(x.location)):""} ${x.platform?("· "+esc(x.platform)):""}</div></div>
+      <div style="text-align:center"><div class="score">${x.score}</div><div class="muted">/10</div></div>
+    </div>
+    <div style="margin-top:8px">${ats} ${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener" class="pill navy">View posting ↗</a>`:""}</div>
+    ${reasons?`<ul class="reasons">${reasons}</ul>`:""}
+    <div class="actions">
+      <button class="btn-primary act-apply" data-id="${x.scored_id}">✍️ Apply (draft for me)</button>
+      <button class="btn-ghost act-skip" data-id="${x.scored_id}">Skip</button>
+    </div>
+    <div class="apply-out"></div>
+  </div>`;
+}
+
+function wireApply(root){
+  root.querySelectorAll(".act-skip").forEach(b=>b.addEventListener("click", async ()=>{
+    await api(`/api/jobs/scored/${b.dataset.id}/skip`,{method:"POST",body:"{}"});
+    b.closest(".card").style.opacity=.5; b.closest(".card").querySelector(".actions").innerHTML='<span class="muted">Skipped</span>';
+  }));
+  root.querySelectorAll(".act-apply").forEach(b=>b.addEventListener("click", ()=>doApply(b, false)));
+}
+
+async function doApply(btn, override){
+  const id=btn.dataset.id, out=btn.closest(".card").querySelector(".apply-out");
+  btn.disabled=true; btn.textContent="Drafting…";
+  const {ok,j} = await api(`/api/jobs/scored/${id}/apply`,{method:"POST",body:JSON.stringify({override})});
+  btn.disabled=false; btn.textContent="✍️ Apply (draft for me)";
+  if(!ok){ out.innerHTML='<div class="gate">Could not draft right now.</div>'; return; }
+  if(j.gated){
+    out.innerHTML=`<div class="gate"><b>ATS match ${j.ats.match_pct}% — below 70%.</b> Add these to your resume if true: <b>${(j.ats.suggestions||[]).map(esc).join(", ")}</b>.<br><button class="btn-ghost act-override" style="margin-top:8px">Draft anyway</button></div>`;
+    out.querySelector(".act-override").addEventListener("click",()=>doApply(btn,true));
+    return;
+  }
+  const e=j.email;
+  out.innerHTML=`<div class="muted" style="margin-top:10px">Draft (${esc(j.draft_source)}) — review &amp; edit before sending:</div>
+    <div class="draftbox"><b>Subject:</b> ${esc(j.subject)}\n\n${esc(e.body)}</div>
+    <a class="maillink" href="${e.mailto}">📧 Open in my email app &amp; send</a>
+    <div class="actions">
+      <button class="btn-ghost act-copy">📋 Copy</button>
+      <button class="btn-primary act-sent" data-app="${j.application_id}">✓ I sent it</button>
+    </div>
+    <div class="muted" style="margin-top:6px">Chitti never sends for you — your own email app sends it (you stay in control).</div>`;
+  out.querySelector(".act-copy").addEventListener("click",()=>navigator.clipboard&&navigator.clipboard.writeText(e.copy_text));
+  out.querySelector(".act-sent").addEventListener("click", async (ev)=>{
+    await api(`/api/jobs/applications/${ev.target.dataset.app}/sent`,{method:"POST",body:"{}"});
+    ev.target.textContent="✓ Marked applied"; ev.target.disabled=true;
+  });
+}
+
+// ── BO10 pipeline ──
+async function loadPipeline(){
+  $("pipeline-list").innerHTML='<div class="empty">Loading…</div>';
+  const {ok,j} = await api("/api/jobs/pipeline");
+  if(!ok){ $("pipeline-list").innerHTML='<div class="empty">Set up your profile first.</div>'; return; }
+  if(!j.applications.length){ $("pipeline-list").innerHTML='<div class="empty">No applications yet.</div>'; $("pipeline-counts").textContent=""; return; }
+  $("pipeline-counts").innerHTML = Object.entries(j.counts).filter(([,n])=>n).map(([s,n])=>`<span class="pill navy">${s}: ${n}</span>`).join(" ");
+  const NEXT={applied:["replied","rejected"],replied:["interview","rejected"],interview:["offer","rejected"],offer:[],found:["applied"],reviewed:["applied"]};
+  $("pipeline-list").innerHTML = j.applications.map(a=>{
+    const opts=(NEXT[a.status]||[]).map(s=>`<button class="btn-ghost act-status" data-app="${a.id}" data-s="${s}">Mark ${s}</button>`).join("");
+    return `<div class="card" data-chitti-response="app-${a.id}">
+      <div style="display:flex;justify-content:space-between"><h2 style="margin:0">${esc(a.job.title||"Job")}</h2><span class="pill ${a.status==='offer'?'green':a.status==='rejected'?'amber':'navy'}">${a.status}</span></div>
+      <div class="muted">${esc(a.job.company||"")} ${a.job.location?("· "+esc(a.job.location)):""}</div>
+      ${opts?`<div class="actions">${opts}</div>`:""}
+    </div>`; }).join("");
+  $("pipeline-list").querySelectorAll(".act-status").forEach(b=>b.addEventListener("click", async ()=>{
+    await api(`/api/jobs/applications/${b.dataset.app}/status`,{method:"POST",body:JSON.stringify({status:b.dataset.s})});
+    loadPipeline();
+  }));
+}
+$("load-pipeline").addEventListener("click", loadPipeline);
+
+// Prefill known profile on load (so returning users see they're known).
+(async ()=>{
+  const {ok,j} = await api("/api/jobs/profile");
+  if(ok && j.knows_user){
+    const p=j.profile;
+    $("f-name").value=p.name||""; $("f-exp").value=p.experience_years??""; $("f-role").value=p.current_role||"";
+    $("f-troles").value=(p.target_roles||[]).join(", "); $("f-locs").value=(p.target_locations||[]).join(", ");
+    $("f-inds").value=(p.target_industries||[]).join(", "); $("f-sal").value=p.salary_expectation||"";
+    $("f-li").value=p.linkedin_url||""; $("f-resume").value=p.resume_text||""; if(p.career_situation)$("f-sit").value=p.career_situation;
+    if(p.consent_basic)$("f-consent").checked=true;
+    $("setup-result").innerHTML=`<span class="level-badge">Welcome back — Chitti remembers you (${esc(p.user_level||'')})</span>`;
+  }
+})();
+</script>
+</body>
+</html>
