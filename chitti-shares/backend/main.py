@@ -937,7 +937,12 @@ def api_usage_today():
             func.coalesce(func.sum(UsageLog.output_tokens), 0).label("to"),
             func.coalesce(func.sum(UsageLog.cost_inr), 0.0).label("inr"),
         ).filter(
-            func.date(UsageLog.created_at) == datetime.utcnow().date()
+            # Turso-quota fix (2026-06-23): func.date(created_at) wrapped the
+            # column in a function → the ix_usage_provider_date / created_at
+            # index could not be used, so this scanned the ENTIRE usage_log
+            # table on every Chitti-Level meter poll (the chitti-shares ~48M
+            # read bleed). A sargable >= range over today uses the index.
+            UsageLog.created_at >= datetime.combine(datetime.utcnow().date(), datetime.min.time())
         ).group_by(UsageLog.provider, UsageLog.operation).all()
 
         breakdown = [
