@@ -22,6 +22,19 @@ from models.breaking_alert import BreakingAlert
 from models.fact_check import FactCheck
 from models.source import Source
 
+# Turso-quota guard (2026-06-23 incident): the feed + coverage queries used
+# to scan the ENTIRE (state,language[,category]) partition of `articles` on
+# every request — no recency bound, and an ORDER BY on non-indexed columns
+# forced a full sort. As the table grew this read hundreds of millions of
+# rows. We now only ever consider articles fetched in the last N days, which
+# is index-backed (ix_articles_published_recent on fetched_at) and bounds
+# rows-read per request. News older than this is pruned anyway (90d cleanup).
+FEED_RECENCY_DAYS = 30
+
+
+def _feed_cutoff():
+    return datetime.utcnow() - timedelta(days=FEED_RECENCY_DAYS)
+
 log = logging.getLogger("news_db")
 
 
@@ -159,6 +172,7 @@ def _coverage_for(db: Session, state: str, language: str) -> dict:
         .filter(
             Article.state.in_([state, "india"]),
             Article.language == language,
+            Article.fetched_at >= _feed_cutoff(),  # Turso-quota guard
         )
         .group_by(Article.category)
         .all()
@@ -172,7 +186,8 @@ def _coverage_for(db: Session, state: str, language: str) -> dict:
     if language != "en":
         en_total = (
             db.query(func.count(Article.id))
-            .filter(Article.state.in_([state, "india"]), Article.language == "en")
+            .filter(Article.state.in_([state, "india"]), Article.language == "en",
+                    Article.fetched_at >= _feed_cutoff())
             .scalar()
             or 0
         )
@@ -218,6 +233,7 @@ def feed(
         .filter(
             Article.state.in_([state, "india"]),  # state-specific OR national fallback
             Article.language == language,
+            Article.fetched_at >= _feed_cutoff(),  # Turso-quota guard: recency-bound the scan
         )
     )
     if category and category != "all":

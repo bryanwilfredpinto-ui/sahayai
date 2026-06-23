@@ -204,17 +204,14 @@ def create_app() -> Flask:
         log.warning("quality framework install skipped: %s", e)
 
     def _health_payload():
-        with SessionLocal() as s:
-            try:
-                sources_active = s.query(Source).filter(Source.active == True).count()  # noqa: E712
-            except Exception:
-                sources_active = 0
+        # Turso-quota guard (2026-06-23): /health must NEVER read the DB — the
+        # chitti-founder self-ping hits it every 4 min. The sources_active
+        # count moved to /api/news-ai/sources (admin/detail). Memory-only here.
         return {
             "ok": True,
             "service": "chitti-news-ai-api",
             "chitti_slug": CHITTI_SLUG,
             "now_utc": datetime.utcnow().isoformat() + "Z",
-            "sources_active": sources_active,
             "scheduler_enabled": settings.scheduler_enabled,
             "rss_poll_minutes": settings.rss_poll_minutes,
         }
