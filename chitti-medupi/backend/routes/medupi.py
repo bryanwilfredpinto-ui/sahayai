@@ -357,7 +357,19 @@ def family_delete_profile(db, profile_id):
 def family_wallet(db):
     token = _user_token_or_400()
     profile_id = _int_arg("profile_id", default=None)
-    return jsonify(medupi_family.wallet_report(db, token, profile_id))
+    try:
+        return jsonify(medupi_family.wallet_report(db, token, profile_id))
+    except Exception:
+        # Graceful-degrade — this endpoint must NEVER 500 (Turso read-block etc.).
+        # A 500 throws a console error on every MedUPI load; an empty 200 keeps the
+        # wallet UI alive showing ₹0. Same contract as /api/usage/today.
+        return jsonify({
+            "profile_id": profile_id,
+            "this_month_spend": 0.0, "this_month_saved": 0.0,
+            "last_12_months_saved": 0.0, "annual_projection": 0.0,
+            "entries": [], "speak_en": "", "speak_hi": "",
+            "caption_en": "", "caption_hi": "", "degraded": True,
+        })
 
 
 @bp.post("/family/wallet")
