@@ -1500,10 +1500,66 @@
     window.Chitti.lang.extend(merged);
   }
 
+  // ── ← Vaani back button (substrate-injected, 2026-06-24) ───────────────
+  // "Vaani is the ONLY user interface" (SAHAYAI_MASTER §2). Every Chitti page
+  // must offer a one-tap return to Vaani. Injected here so every page that
+  // loads chitti_a11y.js inherits it — same default-on contract as the ISL
+  // panel + per-response widget. Guards: never on the Vaani page or homepage;
+  // skip if the page already has a top-of-page Vaani control (no duplicate);
+  // opt out per page with <body data-no-vaani-back>.
+  function injectVaaniBack() {
+    try {
+      if (!document.body) { setTimeout(injectVaaniBack, 100); return; }
+      var href = (location.href || '').toLowerCase();
+      var path = (location.pathname || '').toLowerCase();
+      if (href.indexOf('chitti_vaani') !== -1) return;            // not on Vaani itself
+      if (/(^|\/)(index\.html)?$/.test(path)) return;             // not on the homepage
+      if (document.body.hasAttribute('data-no-vaani-back')) return;
+      if (document.querySelector('[data-chitti-vaani-back]')) return; // already injected
+      // Skip if a top-of-page Vaani control already exists (avoid a duplicate).
+      var existing = document.querySelectorAll('a[href*="chitti_vaani"],[onclick*="chitti_vaani"]');
+      for (var i = 0; i < existing.length; i++) {
+        var r = existing[i].getBoundingClientRect();
+        if (r && r.width > 0 && r.top < 150) return;
+      }
+      // Sit just BELOW any full-width sticky/fixed top bar (e.g. a sticky
+      // disclaimer) so the chip never obscures it. Falls back to top:8px.
+      var topOffset = 8;
+      try {
+        var els = document.body.getElementsByTagName('*');
+        var vw = window.innerWidth || 375;
+        for (var j = 0; j < els.length; j++) {
+          var cs = window.getComputedStyle(els[j]);
+          if (cs.position !== 'fixed' && cs.position !== 'sticky') continue;
+          var rc = els[j].getBoundingClientRect();
+          if (rc.top <= 2 && rc.height > 0 && rc.height < 140 && rc.width >= vw * 0.6) {
+            if (rc.bottom + 4 > topOffset) topOffset = Math.round(rc.bottom) + 4;
+          }
+        }
+      } catch (e2) {}
+      var a = document.createElement('a');
+      a.href = 'chitti_vaani.html';
+      a.setAttribute('data-chitti-vaani-back', '1');
+      a.setAttribute('aria-label', 'Back to Chitti Vaani — your voice assistant');
+      a.textContent = '← Vaani';
+      a.style.cssText = 'position:fixed;top:' + topOffset + 'px;left:8px;z-index:9100;display:inline-flex;' +
+        'align-items:center;gap:6px;min-height:44px;padding:8px 14px;background:#0E2344;' +
+        'color:#fff;text-decoration:none;border:1px solid #D4AF37;border-radius:10px;' +
+        'font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;' +
+        'box-shadow:0 2px 10px rgba(14,35,68,.25)';
+      document.body.appendChild(a);
+    } catch (e) {}
+  }
+
   function init() {
     // Register our widget+QR strings into chitti_lang.js's T-table so
     // the two scripts cooperate instead of fighting on every mutation.
     registerWithChittiLang();
+    // Inject the ← Vaani back button after layout settles, so the
+    // "already has a top Vaani control" guard can measure real positions.
+    (window.requestAnimationFrame || function (f) { setTimeout(f, 16); })(function () {
+      setTimeout(injectVaaniBack, 250);
+    });
     translatePage();
     // Listen for the lang-change event. NOTE: chitti_lang.js dispatches it on
     // `document`, but several pages (incl. the mechanic pages) dispatch it on
