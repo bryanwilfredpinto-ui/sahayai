@@ -88,13 +88,13 @@ Every Chitti has `skills/` (IDENTITY/PERSONALITY/VALUES/BOUNDARIES/GUARDRAILS/FE
 ## 5 — WHAT IS MISSING RIGHT NOW (honest gaps)
 
 - **CEOS missing** for: Fundamentals, MedUPI, News, Vaani, UPI, Scanner, Voice Factory, News AI, Logo&Video. Only CA, Legal, Government, Mechanic-2W, Fashion, Jobs have full CEOS doc sets.
-- **ROLE / SOP / QUALITY files** are not uniform per Chitti — many have skills/ but not a per-folder `SOP.md` + `QUALITY.md`. Coverage is partial.
+- **ROLE / SOP / QUALITY files** not yet uniform per Chitti. **ROLE.md done** for ca · legal · vaani · medupi · upi · logo-video (extracted from CEOS, 2026-06-23). **QUALITY.md done** for ca · legal (vaani · medupi already had richer hand-authored ones; upi · logo-video CEOS have no Quality section yet). Per-folder `SOP.md` still partial.
 - **Memory OS:** design approved (`MEMORY_ARCHITECTURE.md`); **BO1 buildable, BO2 NOT wired** into any Chitti yet. No live cross-session memory in production.
 - **Universal onboarding** (one consent + one Disability Profile flow across all Chittis via Vaani) — not built end-to-end.
 - **DPDP consent system** (granular basic/health/financial/cross-chitti toggles, Memory tab, "Chitti sab bhool ja" wipe) — designed, not built.
 - **Vaani routing to ALL Chittis** — covers a subset; intent router must reach every Chitti's `FEATURES.md` (P0, SAHAYAI_MASTER §8).
 - **Voice Factory Phase 2** — blocked on Sire's Bhashini ULCA registration; `mock_bhashini` still active.
-- **Jobs** is on a feature branch, not merged to `main`.
+- **Jobs** merged to `main` 2026-06-23 (BO1–BO10, 41/41 tests). Frontend live (`sahayai.in/chitti_jobs.html` 200); backend `chitti-jobs-api` + Turso DB provisioning in progress.
 
 ---
 
