@@ -77,6 +77,7 @@ from services import (
     medupi_risk,
     medupi_scheduler,
     medupi_search_log,
+    medupi_memory,
 )
 
 log = logging.getLogger("routes.medupi")
@@ -107,6 +108,11 @@ def _user_token_or_400() -> str:
             "Missing X-User-Token header. Frontend should generate a UUID and store it."
         ))
     return token
+
+
+def _user_token_optional() -> str:
+    """Memory is opt-in + best-effort — never 400 when the token is absent."""
+    return (request.headers.get("X-User-Token") or "").strip()
 
 
 def _json_body() -> dict:
@@ -190,6 +196,19 @@ def scan(db):
       { ok, primary, matches, risk, alternatives,
         nearest_jan_aushadhi, savings_summary, speak_en, speak_hi, ... }
     """
+    # Chitti Memory OS (BO1) — best-effort, opt-in. Retrieve top-5 past facts
+    # for this device and build a system-prompt context block. All wrapped so
+    # a memory failure NEVER affects the scan.
+    token = _user_token_optional()
+    mem_ctx = ""
+    if token:
+        try:
+            mem_ctx = medupi_memory.build_memory_context(
+                medupi_memory.get_facts(db, token, chitti="medupi", limit=5)
+            )
+        except Exception:
+            mem_ctx = ""
+
     # Path B: JSON body with a medicine name.
     body = request.get_json(silent=True)
     if isinstance(body, dict) and (body.get("medicine_name") or body.get("query")):
@@ -199,9 +218,11 @@ def scan(db):
         lat = _to_float_or_none(body.get("lat"))
         lng = _to_float_or_none(body.get("lng"))
         radius = float(body.get("radius_km") or 5.0)
-        return jsonify(medupi_recognition.recognise_text(
-            db, name, lat=lat, lng=lng, radius_km=radius,
-        ))
+        result = medupi_recognition.recognise_text(
+            db, name, lat=lat, lng=lng, radius_km=radius, memory_context=mem_ctx,
+        )
+        _scan_remember(db, token, name, result)
+        return jsonify(result)
 
     # Path A: multipart image upload.
     f = request.files.get("image")
@@ -220,10 +241,29 @@ def scan(db):
     lat = _to_float_or_none(request.form.get("lat"))
     lng = _to_float_or_none(request.form.get("lng"))
     radius = float(request.form.get("radius_km") or 5.0)
-    return jsonify(medupi_recognition.recognise_image(
+    result = medupi_recognition.recognise_image(
         db, image_bytes, f.content_type or "image/jpeg",
-        lat=lat, lng=lng, radius_km=radius,
-    ))
+        lat=lat, lng=lng, radius_km=radius, memory_context=mem_ctx,
+    )
+    _scan_remember(db, token, "[image scan]", result)
+    return jsonify(result)
+
+
+def _scan_remember(db, token: str, query: str, result: dict) -> None:
+    """Write the turn + a durable fact after a scan. Best-effort (never raises)."""
+    if not token:
+        return
+    try:
+        medupi_memory.save_message(db, token, "medupi", "user", query)
+        primary = (result or {}).get("primary") or {}
+        molecule = (primary.get("salt_composition") or primary.get("brand_name")
+                    or (result or {}).get("query") or "").strip()
+        if molecule:
+            risk = ((result or {}).get("risk") or {}).get("risk_class") or ""
+            val = f"{molecule}" + (f" (risk {risk})" if risk else "")
+            medupi_memory.upsert_fact(db, token, "scanned_medicine", val, "medupi")
+    except Exception:
+        pass
 
 
 @bp.get("/medicine/<path:name>")
@@ -350,6 +390,36 @@ def family_delete_profile(db, profile_id):
     if not medupi_family.delete_profile(db, token, profile_id):
         abort(404, description="profile not found")
     return jsonify({"ok": True})
+
+
+# ─────────────────────────────────────────────────────
+# Chitti Memory OS (BO1) — per-user episodic memory
+#   POST /memory/message  → saveMessage(uuid, chitti, role, text)
+#   GET  /memory/facts     → getFacts(uuid, chitti)
+# uuid = X-User-Token (frontend localStorage `sahay_device_id`).
+# ─────────────────────────────────────────────────────
+
+@bp.post("/memory/message")
+@with_db
+def memory_message(db):
+    token = _user_token_or_400()
+    body = _json_body()
+    ok = medupi_memory.save_message(
+        db, token,
+        str(body.get("chitti") or "medupi"),
+        str(body.get("role") or "user"),
+        str(body.get("text") or ""),
+    )
+    return jsonify({"ok": ok})
+
+
+@bp.get("/memory/facts")
+@with_db
+def memory_facts(db):
+    token = _user_token_or_400()
+    chitti = request.args.get("chitti") or None
+    limit = _int_arg("limit", default=5, min_val=1, max_val=50)
+    return jsonify({"ok": True, "facts": medupi_memory.get_facts(db, token, chitti, limit)})
 
 
 @bp.get("/family/wallet")

@@ -20,3 +20,5 @@ from models.health_file import (  # noqa: F401
     InsurancePolicy,
     HealthDispatch,
 )
+# Chitti Memory OS — BO1: per-user episodic memory (sessions + facts).
+from models.memory import UserSession, UserFact  # noqa: F401

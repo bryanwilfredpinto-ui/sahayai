@@ -820,12 +820,21 @@ const API_BASE = (function(){
   try { return localStorage.getItem('chitti_medupi_api_base') || 'https://chitti-medupi-api-production.up.railway.app'; }
   catch(e){ return 'https://chitti-medupi-api-production.up.railway.app'; }
 })();
+// Chitti Memory OS (BO1): point memory_store.js at the same backend.
+try { window.CHITTI_MEMORY_BASE = API_BASE; } catch(e){}
 function _userToken(){
   try {
-    let t = localStorage.getItem('chitti_medupi_user_token');
+    // Chitti Memory OS (BO1): the canonical device id is `sahay_device_id`.
+    // Migrate the legacy chitti_medupi_user_token value if present so existing
+    // family-wallet / reminder data (keyed on the old token) is NOT orphaned.
+    let t = localStorage.getItem('sahay_device_id');
     if (!t) {
-      t = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('u-' + Math.random().toString(36).slice(2) + Date.now().toString(36));
-      localStorage.setItem('chitti_medupi_user_token', t);
+      t = localStorage.getItem('chitti_medupi_user_token')
+          || ((crypto && crypto.randomUUID) ? crypto.randomUUID() : ('u-' + Math.random().toString(36).slice(2) + Date.now().toString(36)));
+      localStorage.setItem('sahay_device_id', t);
+    }
+    if (localStorage.getItem('chitti_medupi_user_token') !== t) {
+      localStorage.setItem('chitti_medupi_user_token', t);   // keep legacy key mirrored
     }
     return t;
   } catch(e) { return 'anon-' + Date.now(); }
@@ -2705,6 +2714,8 @@ async function chittiAskSend() {
 <!-- Chitti Quality v2 trust signals · 2026-05-13 -->
 <script>window.CHITTI_LAST_AUDIT='2026-05-13';window.CHITTI_CO2_G=0.3;</script>
 <script src="feedback-widget.js" data-page="chitti_medupi"></script>
+<!-- Chitti Memory OS (BO1) — per-user episodic memory. MedUPI pilot only. -->
+<script src="memory_store.js" defer></script>
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
