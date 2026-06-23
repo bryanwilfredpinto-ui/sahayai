@@ -985,6 +985,124 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
   </div>
 </div>
 
+<!-- ════════════ HOMEPAGE v2 — language gate + magic moment + Chitti character ════════════
+     UI/UX only. No functionality removed. Self-contained overlays + #vai-v2 module near </body>. -->
+<style id="vai-v2-styles">
+  /* ── Chitti character (shared SVG, 3 states via [data-state]) ── */
+  .vai-char{display:inline-block;line-height:0}
+  .vai-char .vc-wave{transform-origin:center;opacity:0}
+  .vai-char[data-state="listening"] .vc-wave{opacity:1;animation:vcWave 1.05s ease-in-out infinite}
+  .vai-char[data-state="listening"] .vc-wave.w2{animation-delay:.16s}
+  .vai-char[data-state="listening"] .vc-wave.w3{animation-delay:.32s}
+  .vai-char .vc-dot{opacity:0}
+  .vai-char[data-state="thinking"] .vc-dot{opacity:1;animation:vcDot 1s ease-in-out infinite}
+  .vai-char[data-state="thinking"] .vc-dot.d2{animation-delay:.18s}
+  .vai-char[data-state="thinking"] .vc-dot.d3{animation-delay:.36s}
+  .vai-char .vc-smile{transition:d .2s}
+  @keyframes vcWave{0%,100%{opacity:.25;transform:scaleY(.55)}50%{opacity:1;transform:scaleY(1)}}
+  @keyframes vcDot{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+  @media (prefers-reduced-motion:reduce){
+    .vai-char .vc-wave,.vai-char .vc-dot{animation:none!important}
+    .vai-char[data-state="listening"] .vc-wave,.vai-char[data-state="thinking"] .vc-dot{opacity:.9}
+  }
+
+  /* ── Language gate (very FIRST screen) ── */
+  /* chitti_theme.css forces [role=dialog][aria-modal] → z-index:9000 (spec 0,2,0); ID rules below win it.
+     Gate must sit above the substrate Disability-Profile modal (99998) so the language picker is genuinely FIRST. */
+  #vai-lang-gate{z-index:100001 !important}
+  #vai-magic{z-index:9400 !important}
+  .vai-lang-gate{position:fixed;inset:0;z-index:100001;background:#F7F7F4;display:flex;flex-direction:column;
+    align-items:center;padding:30px 16px 24px;overflow-y:auto;text-align:center}
+  .vai-lang-gate.hidden{display:none}
+  .vai-lang-gate .vlg-char{margin:4px 0 6px}
+  .vai-lang-gate h1{font-size:23px;font-weight:900;color:var(--vai-navy);margin:6px 0 2px;line-height:1.25}
+  .vai-lang-gate .vlg-sub{font-size:14.5px;color:#5a5a5a;font-weight:600;max-width:340px;line-height:1.45;margin-bottom:14px}
+  .vai-lang-gate .vlg-default{min-height:56px;border:none;border-radius:16px;background:var(--vai-green);color:#fff;
+    font-size:18px;font-weight:900;padding:0 22px;cursor:pointer;box-shadow:0 10px 26px rgba(4,106,56,.32);margin-bottom:6px}
+  .vai-lang-gate .vlg-or{font-size:12.5px;color:#999;font-weight:700;margin:8px 0 12px;letter-spacing:.5px}
+  .vai-lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;max-width:420px}
+  .vlg-chip{display:flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--vai-line);border-radius:14px;
+    padding:0 6px 0 12px;min-height:54px;cursor:pointer}
+  .vlg-chip:focus-within{border-color:var(--vai-green)}
+  .vlg-chip.vlg-default-chip{border-color:var(--vai-green);box-shadow:0 0 0 2px rgba(4,106,56,.18)}
+  .vlg-chip .vlg-name{flex:1;text-align:left;background:none;border:none;font-family:inherit;cursor:pointer;
+    font-size:16px;font-weight:800;color:var(--vai-navy);padding:8px 0;min-height:48px}
+  .vlg-chip .vlg-name .vlg-en{display:block;font-size:11px;font-weight:600;color:#8a8a8a;margin-top:1px}
+  .vlg-chip .vlg-spk{flex:0 0 auto;width:42px;height:42px;border-radius:10px;border:1px solid var(--vai-line);
+    background:#f6f6f4;font-size:18px;cursor:pointer;color:var(--vai-navy)}
+  .vlg-chip .vlg-spk:active{background:var(--vai-green);color:#fff}
+  .vai-lang-gate .vlg-foot{font-size:12px;color:#9a9a9a;margin-top:18px;line-height:1.5;max-width:330px}
+
+  /* ── Magic moment (first interactive screen, after consent) ── */
+  .vai-magic{position:fixed;inset:0;z-index:8700;background:linear-gradient(180deg,#FFFDF8,#F7F7F4);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 18px;text-align:center}
+  .vai-magic.hidden{display:none}
+  .vai-magic .vm-greet{font-size:16px;color:#6b6b6b;font-weight:700}
+  .vai-magic .vm-char{margin:14px 0 2px}
+  .vai-magic .vm-state{font-size:13.5px;color:var(--vai-green);font-weight:800;letter-spacing:.3px;min-height:18px;margin-bottom:8px}
+  .vai-magic .vm-mic{width:168px;height:168px;border-radius:50%;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--vai-saffron),var(--vai-green));color:#fff;font-size:74px;
+    display:flex;align-items:center;justify-content:center;position:relative;
+    box-shadow:0 16px 44px rgba(4,106,56,.42);margin:6px auto 0}
+  .vai-magic .vm-mic::after{content:'';position:absolute;inset:-10px;border-radius:50%;
+    border:3px solid rgba(4,106,56,.25);animation:vmRing 1.8s ease-out infinite}
+  .vai-magic .vm-mic.listening{background:var(--vai-red);box-shadow:0 16px 44px rgba(198,40,40,.45)}
+  @keyframes vmRing{0%{transform:scale(.9);opacity:.7}100%{transform:scale(1.25);opacity:0}}
+  @media (prefers-reduced-motion:reduce){.vai-magic .vm-mic::after{animation:none;opacity:.4}}
+  .vai-magic .vm-cta{font-size:25px;font-weight:900;color:var(--vai-green);margin-top:24px;line-height:1.2}
+  .vai-magic .vm-cta small{display:block;font-size:15px;font-weight:600;color:#555;margin-top:6px}
+  .vai-magic .vm-skip{margin-top:26px;background:none;border:none;color:#888;font-size:14px;
+    text-decoration:underline;cursor:pointer;min-height:44px}
+  .vai-magic .vm-foot{margin-top:auto;padding-top:18px;font-size:12px;color:#9a9a9a;line-height:1.5}
+
+  /* ── Home: 6 primary cards + reveal ── */
+  .vai-home-charbar{display:flex;align-items:center;gap:11px;margin:0 0 12px}
+  .vai-home-charbar .hc-tt{flex:1}
+  .vai-home-charbar .hc-tt .b{font-size:18px;font-weight:900;color:var(--vai-navy);line-height:1}
+  .vai-home-charbar .hc-tt .s{font-size:12px;color:#6b8a78;font-weight:700;margin-top:3px}
+  .vai-sectit{font-size:12.5px;font-weight:800;color:#8a8a8a;letter-spacing:.4px;margin:4px 2px 8px;text-transform:uppercase}
+  .vai-home-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .vai-home-card{background:#fff;border:1px solid var(--vai-line);border-radius:18px;padding:16px 10px;
+    text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.04);min-height:112px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:inherit;font-family:inherit}
+  .vai-home-card .ic{font-size:36px;line-height:1}
+  .vai-home-card .lb{font-size:15.5px;font-weight:800;color:var(--vai-dark)}
+  .vai-home-card .sb{font-size:11.5px;color:#777;line-height:1.3}
+  .vai-home-card.sos{border-color:var(--vai-red);background:#fff5f5}
+  .vai-home-card.sos .lb{color:var(--vai-red)}
+  .vai-home-card:focus-visible{outline:3px solid var(--vai-gold);outline-offset:2px}
+  .vai-home-more{margin:14px 0 4px;width:100%;min-height:54px;border-radius:16px;border:2px dashed var(--vai-saffron);
+    background:#fff;color:#B34700;font-size:16.5px;font-weight:900;cursor:pointer}
+</style>
+
+<!-- LANGUAGE GATE — shown first if no language has ever been chosen on this device -->
+<div id="vai-lang-gate" class="vai-lang-gate hidden" role="dialog" aria-modal="true" aria-labelledby="vlg-title">
+  <div class="vlg-char">
+    <span class="vai-char" data-vai-char data-size="76" data-state="happy" aria-hidden="true"></span>
+  </div>
+  <h1 id="vlg-title">अपनी भाषा चुनें<br><span style="font-size:17px;color:#444">Choose your language</span></h1>
+  <div class="vlg-sub">Chitti आपकी भाषा में बात करेगी · Chitti will talk with you in your language.</div>
+  <button class="vlg-default" id="vlg-default-btn" type="button">Continue in English  →</button>
+  <div class="vlg-or">— या नीचे से चुनें · or pick below —</div>
+  <div class="vai-lang-grid" id="vai-lang-grid" role="group" aria-label="Languages"></div>
+  <div class="vlg-foot">एक बार चुनें — Chitti हमेशा याद रखेगी।<br>Pick once — Chitti remembers, and never asks again. 🔊 tap to hear a language.</div>
+</div>
+
+<!-- MAGIC MOMENT — first interactive screen (after consent), before any setup form -->
+<div id="vai-magic" class="vai-magic hidden" role="dialog" aria-modal="true" aria-labelledby="vm-cta">
+  <div class="vm-greet">नमस्ते 🙏</div>
+  <div class="vm-char">
+    <span class="vai-char" id="vai-magic-char" data-vai-char data-size="148" data-state="listening" aria-hidden="true"></span>
+  </div>
+  <div class="vm-state" id="vai-magic-state">🎙️ Chitti sun rahi hai…</div>
+  <button class="vm-mic" id="vai-magic-mic" type="button" onclick="vaiMagicMic()" aria-label="Bolo — mic dabaayein aur apni bhasha mein bolein">🎤</button>
+  <div class="vm-cta"><span data-v2-i18n="magic.cta">Bolo — Chitti sunegi</span>
+    <small data-v2-i18n="magic.sub">माइक दबाएँ · अपनी भाषा में बोलें</small>
+  </div>
+  <button class="vm-skip" type="button" onclick="vaiMagicSkip()" data-v2-i18n="magic.skip">घर देखें →  ·  Skip to home</button>
+  <div class="vm-foot" data-v2-i18n="magic.foot">कोई sign-up नहीं · हमेशा मुफ़्त · आपकी आवाज़ इसी फ़ोन पर रहती है</div>
+</div>
+
 <!-- ════════════ CONSENT GATE — every feature locked until accepted ════════════ -->
 <div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
   <div class="consent-panel">
@@ -1104,6 +1222,41 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 
   <!-- ══════════════ TAB 1 · TALK ══════════════ -->
   <div class="vai-tab-panel active" data-tab="talk" id="vai-panel-talk">
+
+  <!-- ════════ HOME: Chitti character + 6 primary cards (P2/P3) ════════ -->
+  <section class="section-card" aria-label="Chitti home">
+    <div class="vai-home-charbar">
+      <span class="vai-char" data-vai-char data-size="52" data-state="happy" aria-hidden="true"></span>
+      <div class="hc-tt">
+        <div class="b">Chitti Vaani</div>
+        <div class="s" data-v2-i18n="home.ready">आपका dost · तैयार है</div>
+      </div>
+    </div>
+    <div class="vai-sectit" data-v2-i18n="home.primary">मुख्य काम · Main things</div>
+    <div class="vai-home-grid" role="group" aria-label="Primary actions">
+      <button class="vai-home-card" type="button" onclick="vaiHomeBolo()">
+        <span class="ic" aria-hidden="true">🎤</span><span class="lb">Bolo</span><span class="sb" data-v2-i18n="home.bolo">कुछ भी पूछो</span>
+      </button>
+      <button class="vai-home-card" type="button" onclick="vaiHomeUpi()">
+        <span class="ic" aria-hidden="true">🛡️</span><span class="lb">UPI Check</span><span class="sb" data-v2-i18n="home.upi">fraud जाँचें</span>
+      </button>
+      <button class="vai-home-card" type="button" onclick="vaiHomeSafeWalk()">
+        <span class="ic" aria-hidden="true">🚶‍♀️</span><span class="lb">SafeWalk</span><span class="sb" data-v2-i18n="home.safewalk">सुरक्षित घर पहुँचें</span>
+      </button>
+      <button class="vai-home-card" type="button" onclick="vaiHomeCall()">
+        <span class="ic" aria-hidden="true">📞</span><span class="lb">Call / WhatsApp</span><span class="sb" data-v2-i18n="home.call">संपर्क करें</span>
+      </button>
+      <button class="vai-home-card" type="button" onclick="vaiSwitchTab('vault')">
+        <span class="ic" aria-hidden="true">📁</span><span class="lb">Vault</span><span class="sb" data-v2-i18n="home.vault">ज़रूरी कागज़</span>
+      </button>
+      <button class="vai-home-card sos" type="button" onclick="vaiSwitchTab('sos')">
+        <span class="ic" aria-hidden="true">🚨</span><span class="lb">SOS</span><span class="sb" data-v2-i18n="home.sos">आपातकाल</span>
+      </button>
+    </div>
+    <button class="vai-home-more" type="button" onclick="vaiSwitchTab('act')">
+      <span data-v2-i18n="home.more">और देखें</span> →
+    </button>
+  </section>
 
   <!-- ════════ HERO MIC ════════ -->
   <section class="section-card chitti-response" aria-labelledby="mic-title" data-chitti-section="🎙️ Talk to Chitti">
@@ -1647,7 +1800,20 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
         </select>
       </div>
       <button class="vai-general-btn" onclick="vaiOpenCaregiver()" data-vai-i18n="set.caregiver">👨‍👩‍👧 Caregiver panel</button>
-      <div class="vai-version" id="vai-version">Chitti Vaani · v1.4 · 2026-05-23</div>
+
+      <!-- P4: technical surfaces tucked under Advanced → Developer. A grandmother never sees PBKDF2/WebAuthn. -->
+      <details class="vai-advanced" style="margin-top:12px;border-top:1px solid var(--vai-line);padding-top:10px">
+        <summary style="cursor:pointer;font-size:14px;font-weight:800;color:#6a6a6a;min-height:44px;display:flex;align-items:center;gap:6px">
+          <span aria-hidden="true">🔧</span> <span data-v2-i18n="set.advanced">Advanced · Developer options</span>
+        </summary>
+        <div style="font-size:12.5px;color:#888;line-height:1.5;margin:8px 0 10px" data-v2-i18n="set.advanced.note">
+          For power users only. Normal use never needs anything here.
+        </div>
+        <button class="vai-general-btn" type="button" onclick="kvOpen('settings')">
+          🔐 <span data-v2-i18n="set.keysvault">Keys Vault (encrypted backup · AES-256 · biometric)</span>
+        </button>
+        <div class="vai-version" id="vai-version">Chitti Vaani · v1.5 · 2026-06-23</div>
+      </details>
     </section>
   </div>
 
@@ -3294,15 +3460,15 @@ const _vaiOrigAccept = (typeof acceptConsent === 'function') ? acceptConsent : n
 // (boot calls setConsentLang(CURRENT_LANG)), so the two surfaces never disagree.
 // (QA 2026-06-15)
 function detectInitialVaaniLang(){
-  const SUP = ['hi','en','ta','te','bn','mr','gu','kn','ml'];
+  // P5 (Sire 2026-06-23): NO auto-detect, NO Hindi default. A stored choice
+  // (made on the language gate — the very first screen) wins. Otherwise English
+  // is the highlighted default and the gate is shown on first load so the user
+  // picks once and is never asked again. See the #vai-v2 module near </body>.
   try {
     const stored = localStorage.getItem(LANG_KEY);
-    if (stored && SUP.indexOf(stored) !== -1) return stored;
-    const nav = ((navigator.languages && navigator.languages[0]) || navigator.language || '').toLowerCase();
-    const code = nav.split('-')[0];
-    if (SUP.indexOf(code) !== -1) return code;
+    if (stored) return stored;
   } catch (e) {}
-  return 'hi';
+  return 'en';
 }
 let CURRENT_LANG = detectInitialVaaniLang();
 let CONSENT_LANG = CURRENT_LANG;
@@ -3383,6 +3549,11 @@ function acceptConsent(){
   // If already registered, fall through to the legacy onboarding.
   setTimeout(() => {
     try {
+      // P1 (2026-06-23): the magic moment comes FIRST. Device / name / permission
+      // setup is deferred until AFTER the user's first successful interaction
+      // (see vaiOnFirstInteraction in the #vai-v2 module). Returning users who
+      // already saw the magic moment fall through to the legacy registration.
+      if (typeof vaiShowMagic === 'function' && vaiShowMagic()) return;
       if (!maybeShowDeviceRegistration()) vaiOnbMaybeOpen();
     } catch(e) { try { vaiOnbMaybeOpen(); } catch(_){} }
   }, 300);
@@ -3451,7 +3622,7 @@ function getRecog(){
   };
   r.onend = () => {
     LISTENING = false;
-    document.getElementById('mic-big').classList.remove('listening');
+    { const _mb=document.getElementById('mic-big'); if(_mb)_mb.classList.remove('listening'); const _mm=document.getElementById('vai-magic-mic'); if(_mm)_mm.classList.remove('listening'); if(typeof vaiSetCharState==='function')vaiSetCharState('happy'); }
     const txt = (document.getElementById('user-text').value || '').trim();
     if (!txt) return;
     // Try the voice-intent router first. If it handles the utterance,
@@ -3465,7 +3636,7 @@ function getRecog(){
   };
   r.onerror = () => {
     LISTENING = false;
-    document.getElementById('mic-big').classList.remove('listening');
+    { const _mb=document.getElementById('mic-big'); if(_mb)_mb.classList.remove('listening'); const _mm=document.getElementById('vai-magic-mic'); if(_mm)_mm.classList.remove('listening'); if(typeof vaiSetCharState==='function')vaiSetCharState('happy'); }
   };
   RECOG = r;
   return r;
@@ -3481,7 +3652,7 @@ function toggleMic(){
   if (LISTENING) { try{ r.stop(); }catch(e){} return; }
   r.lang = bcp47(CURRENT_LANG);
   LISTENING = true;
-  document.getElementById('mic-big').classList.add('listening');
+  { const _mb=document.getElementById('mic-big'); if(_mb)_mb.classList.add('listening'); const _mm=document.getElementById('vai-magic-mic'); if(_mm)_mm.classList.add('listening'); if(typeof vaiSetCharState==='function')vaiSetCharState('listening'); }
   document.getElementById('user-text').value = '';
   try { r.start(); } catch(e){ /* already started */ }
 }
@@ -3503,6 +3674,7 @@ async function sendToChitti(){
   document.getElementById('answer-box').classList.add('shown');
   ans.textContent  = '… Chitti soch rahi hai …';
   meta.textContent = '';
+  if (typeof vaiSetCharState === 'function') vaiSetCharState('thinking');
 
   let data;
   try {
@@ -3536,6 +3708,8 @@ async function sendToChitti(){
   // AUTO-SPEAK every reply
   speakText(data.reply, LAST_REPLY_LANG);
   pushHistory({ q: text, a: data.reply, lang: LAST_REPLY_LANG, mode: CURRENT_MODE, ts: Date.now() });
+  if (typeof vaiSetCharState === 'function') vaiSetCharState('happy');
+  if (typeof vaiOnFirstInteraction === 'function') vaiOnFirstInteraction();
 }
 
 /* ── INPUT HELPERS ── */
@@ -8919,5 +9093,201 @@ window.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+<!-- ════════════ HOMEPAGE v2 MODULE (UI/UX only — language gate · magic moment · Chitti character · 6-card home) ════════════ -->
+<script id="vai-v2">
+(function(){
+  "use strict";
+  var LANG_KEY  = 'chitti_vaani_lang';
+  var MAGIC_KEY = 'chitti_vaani_magic_done';
+  var ONB_AFTER_KEY = 'chitti_vaani_postchat_onb';
+
+  // 26 languages — canonical list mirrors chitti_lang.js LANGS. English first (default-highlighted).
+  var LANGS = [
+    {c:'en',n:'English',e:'English'},   {c:'hi',n:'हिन्दी',e:'Hindi'},
+    {c:'bn',n:'বাংলা',e:'Bangla'},      {c:'te',n:'తెలుగు',e:'Telugu'},
+    {c:'ta',n:'தமிழ்',e:'Tamil'},       {c:'mr',n:'मराठी',e:'Marathi'},
+    {c:'gu',n:'ગુજરાતી',e:'Gujarati'},  {c:'kn',n:'ಕನ್ನಡ',e:'Kannada'},
+    {c:'ml',n:'മലയാളം',e:'Malayalam'},  {c:'pa',n:'ਪੰਜਾਬੀ',e:'Punjabi'},
+    {c:'or',n:'ଓଡ଼ିଆ',e:'Odia'},        {c:'as',n:'অসমীয়া',e:'Assamese'},
+    {c:'ur',n:'اردو',e:'Urdu'},         {c:'sa',n:'संस्कृतम्',e:'Sanskrit'},
+    {c:'mai',n:'मैथिली',e:'Maithili'},  {c:'kok',n:'कोंकणी',e:'Konkani'},
+    {c:'doi',n:'डोगरी',e:'Dogri'},      {c:'ks',n:'کٲشُر',e:'Kashmiri'},
+    {c:'ne',n:'नेपाली',e:'Nepali'},     {c:'sd',n:'سنڌي',e:'Sindhi'},
+    {c:'mni',n:'মৈতৈলোন্',e:'Manipuri'},{c:'sat',n:'ᱥᱟᱱᱛᱟᱲᱤ',e:'Santali'},
+    {c:'bho',n:'भोजपुरी',e:'Bhojpuri'}, {c:'raj',n:'राजस्थानी',e:'Rajasthani'},
+    {c:'kru',n:'कुड़ुख़',e:'Kurukh'},   {c:'hoc',n:'हो',e:'Ho'}
+  ];
+
+  // ── New-UI strings. English is the BASE (default); Hindi provided. Other langs
+  //    fall back to English here and are auto-translated by the chitti_lang.js substrate. ──
+  var STR = {
+    en:{'magic.cta':'Speak — Chitti is listening','magic.sub':'Tap the mic · speak in your language','magic.skip':'Go to home →  ·  Skip',
+        'magic.foot':'No sign-up · Always free · Your voice stays on this phone',
+        'home.ready':'Your dost · ready','home.primary':'Main things','home.bolo':'Ask anything','home.upi':'Check for fraud',
+        'home.safewalk':'Reach home safely','home.call':'Reach someone','home.vault':'Important papers','home.sos':'Emergency','home.more':'See more',
+        'set.advanced':'Advanced · Developer options','set.advanced.note':'For power users only. Normal use never needs anything here.',
+        'set.keysvault':'Keys Vault (encrypted backup · AES-256 · biometric)',
+        'st.listening':'🎙️ Chitti is listening…','st.thinking':'💭 Chitti is thinking…','st.happy':'🙂 Chitti is ready'},
+    hi:{'magic.cta':'बोलो — Chitti सुनेगी','magic.sub':'माइक दबाएँ · अपनी भाषा में बोलें','magic.skip':'घर देखें →  ·  Skip',
+        'magic.foot':'कोई sign-up नहीं · हमेशा मुफ़्त · आपकी आवाज़ इसी फ़ोन पर रहती है',
+        'home.ready':'आपका dost · तैयार है','home.primary':'मुख्य काम','home.bolo':'कुछ भी पूछो','home.upi':'fraud जाँचें',
+        'home.safewalk':'सुरक्षित घर पहुँचें','home.call':'संपर्क करें','home.vault':'ज़रूरी कागज़','home.sos':'आपातकाल','home.more':'और देखें',
+        'set.advanced':'Advanced · डेवलपर विकल्प','set.advanced.note':'केवल power users के लिए। आम उपयोग में इसकी ज़रूरत नहीं।',
+        'set.keysvault':'Keys Vault (एन्क्रिप्टेड बैकअप · AES-256 · biometric)',
+        'st.listening':'🎙️ Chitti sun rahi hai…','st.thinking':'💭 Chitti soch rahi hai…','st.happy':'🙂 Chitti taiyaar hai'}
+  };
+  function activeLang(){ try { return localStorage.getItem(LANG_KEY) || window.CURRENT_LANG || 'en'; } catch(e){ return 'en'; } }
+  function t(key, lang){ var L = STR[lang] || STR.en; return (L && L[key]) || STR.en[key] || ''; }
+
+  // ── Chitti character SVG (parametric; 3 states driven by [data-state] + CSS) ──
+  var _cid = 0;
+  function charSVG(px){
+    var g = 'vcS' + (++_cid);
+    return '<svg width="'+px+'" height="'+px+'" viewBox="0 0 150 150" role="img" aria-label="Chitti">'
+      + '<defs><radialGradient id="'+g+'" cx="50%" cy="40%" r="65%">'
+      + '<stop offset="0%" stop-color="#FFD9A0"/><stop offset="60%" stop-color="#FFB85C"/><stop offset="100%" stop-color="#FF9A3D"/></radialGradient></defs>'
+      + '<g stroke="#046A38" stroke-width="4" stroke-linecap="round" fill="none">'
+      + '<line class="vc-wave w1" x1="18" y1="62" x2="18" y2="88"/><line class="vc-wave w2" x1="30" y1="54" x2="30" y2="96"/>'
+      + '<line class="vc-wave w2" x1="120" y1="54" x2="120" y2="96"/><line class="vc-wave w3" x1="132" y1="62" x2="132" y2="88"/></g>'
+      + '<g fill="#046A38"><circle class="vc-dot d1" cx="63" cy="18" r="3.2"/><circle class="vc-dot d2" cx="75" cy="18" r="3.2"/><circle class="vc-dot d3" cx="87" cy="18" r="3.2"/></g>'
+      + '<circle cx="75" cy="75" r="48" fill="url(#'+g+')" stroke="#F57F17" stroke-width="2.5"/>'
+      + '<circle cx="75" cy="40" r="3.4" fill="#c62828"/>'
+      + '<ellipse cx="60" cy="72" rx="6.5" ry="8.5" fill="#3a2a16"/><ellipse cx="90" cy="72" rx="6.5" ry="8.5" fill="#3a2a16"/>'
+      + '<circle cx="62" cy="69" r="2.2" fill="#fff"/><circle cx="92" cy="69" r="2.2" fill="#fff"/>'
+      + '<circle cx="52" cy="88" r="6" fill="#FF8A65" opacity=".45"/><circle cx="98" cy="88" r="6" fill="#FF8A65" opacity=".45"/>'
+      + '<path class="vc-smile" d="M60 96 Q75 108 90 96" stroke="#7a4a1e" stroke-width="4" fill="none" stroke-linecap="round"/>'
+      + '</svg>';
+  }
+  function injectChars(){
+    var els = document.querySelectorAll('[data-vai-char]');
+    for (var i=0;i<els.length;i++){
+      if (els[i].getAttribute('data-vc-done')) continue;
+      var px = parseInt(els[i].getAttribute('data-size'),10) || 64;
+      els[i].innerHTML = charSVG(px);
+      els[i].setAttribute('data-vc-done','1');
+    }
+  }
+  // Global: drive the character's emotional state everywhere at once.
+  window.vaiSetCharState = function(state){
+    if (['listening','thinking','happy'].indexOf(state) === -1) state = 'happy';
+    var els = document.querySelectorAll('[data-vai-char]');
+    for (var i=0;i<els.length;i++) els[i].setAttribute('data-state', state);
+    var cap = document.getElementById('vai-magic-state');
+    if (cap) cap.textContent = t('st.'+state, activeLang());
+  };
+
+  // ── Apply new-UI strings (English base + Hindi; substrate translates the rest) ──
+  function applyStrings(lang){
+    var keys = Object.keys(STR.en);
+    for (var i=0;i<keys.length;i++){
+      var els = document.querySelectorAll('[data-v2-i18n="'+keys[i]+'"]');
+      var val = t(keys[i], lang);
+      for (var j=0;j<els.length;j++){ if (val && els[j].textContent !== val) els[j].textContent = val; }
+    }
+    var cap = document.getElementById('vai-magic-state');
+    if (cap) { var st = (document.querySelector('[data-vai-char]')||{getAttribute:function(){return 'listening';}}).getAttribute('data-state') || 'listening'; cap.textContent = t('st.'+st, lang); }
+  }
+
+  // ── LANGUAGE GATE ──
+  function hasChosenLang(){ try { return !!localStorage.getItem(LANG_KEY); } catch(e){ return false; } }
+  function renderLangGrid(){
+    var grid = document.getElementById('vai-lang-grid');
+    if (!grid) return;
+    var html = '';
+    for (var i=0;i<LANGS.length;i++){
+      var L = LANGS[i];
+      var dflt = (L.c === 'en') ? ' vlg-default-chip' : '';
+      html += '<div class="vlg-chip'+dflt+'">'
+        + '<button class="vlg-name" type="button" onclick="vaiPickLang(\''+L.c+'\')" aria-label="'+L.e+'">'
+        + L.n + '<span class="vlg-en">'+L.e+'</span></button>'
+        + '<button class="vlg-spk" type="button" aria-label="Hear '+L.e+'" '
+        + 'onclick="vaiSpeakLang(\''+L.c+'\',\''+encodeURIComponent(L.n)+'\')">🔊</button>'
+        + '</div>';
+    }
+    grid.innerHTML = html;
+  }
+  window.vaiSpeakLang = function(code, encName){
+    var name = decodeURIComponent(encName||'');
+    try { if (typeof speakText === 'function') speakText(name, code); } catch(e){}
+  };
+  window.vaiPickLang = function(code){
+    try { localStorage.setItem(LANG_KEY, code); } catch(e){}
+    try { window.CURRENT_LANG = code; } catch(e){}
+    try { if (typeof changeLanguage === 'function') changeLanguage(code); } catch(e){}
+    try { if (typeof setConsentLang === 'function') setConsentLang(code); } catch(e){}
+    var sel = document.getElementById('lang-select'); if (sel) { try { sel.value = code; } catch(e){} }
+    try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail:{ lang: code } })); } catch(e){}
+    try { if (typeof vaiApplyI18n === 'function') vaiApplyI18n(); } catch(e){}
+    applyStrings(code);
+    var gate = document.getElementById('vai-lang-gate'); if (gate) gate.classList.add('hidden');
+    // First-run chain: language → consent → magic moment.
+    var consent = document.getElementById('consent-overlay');
+    var given = (typeof consentGiven === 'function') ? consentGiven() : false;
+    if (!given && consent) {
+      consent.classList.remove('hidden');
+      try { if (typeof speakText === 'function') speakText(t('magic.sub', code), code); } catch(e){}
+    } else if (!localStorage.getItem(MAGIC_KEY)) {
+      window.vaiShowMagic();
+    }
+  };
+
+  // ── MAGIC MOMENT ──
+  window.vaiShowMagic = function(){
+    try { if (localStorage.getItem(MAGIC_KEY)) return false; } catch(e){}
+    var m = document.getElementById('vai-magic'); if (!m) return false;
+    applyStrings(activeLang());
+    window.vaiSetCharState('listening');
+    m.classList.remove('hidden');
+    return true;
+  };
+  function hideMagic(){ var m = document.getElementById('vai-magic'); if (m) m.classList.add('hidden'); try { localStorage.setItem(MAGIC_KEY,'1'); } catch(e){} }
+  window.vaiMagicMic = function(){
+    hideMagic();                 // reveal the real home so Chitti's reply is visible
+    try { if (typeof toggleMic === 'function') toggleMic(); } catch(e){}
+  };
+  window.vaiMagicSkip = function(){ hideMagic(); window.vaiSetCharState('happy'); };
+
+  // ── Deferred onboarding — only AFTER the first successful interaction ──
+  window.vaiOnFirstInteraction = function(){
+    try { if (localStorage.getItem(ONB_AFTER_KEY)) return; } catch(e){}
+    try { localStorage.setItem(ONB_AFTER_KEY,'1'); } catch(e){}
+    var registered = true;
+    try { registered = (typeof deviceRegistered === 'function') ? deviceRegistered() : true; } catch(e){}
+    if (registered) return;
+    setTimeout(function(){ try { if (typeof maybeShowDeviceRegistration === 'function') maybeShowDeviceRegistration(); } catch(e){} }, 900);
+  };
+
+  // ── HOME 6-card handlers (all reuse existing functions; nothing removed) ──
+  function call(fn){ try { if (typeof window[fn] === 'function') { window[fn](); return true; } } catch(e){} return false; }
+  window.vaiHomeBolo = function(){
+    if (typeof vaiSwitchTab === 'function') vaiSwitchTab('talk');
+    var mic = document.getElementById('globalMic');
+    if (mic) { try { mic.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){} }
+    try { if (typeof toggleMic === 'function') toggleMic(); } catch(e){}
+  };
+  window.vaiHomeUpi = function(){
+    if (typeof vaiSwitchTab === 'function') vaiSwitchTab('talk');
+    var d = document.querySelector('.vai-type-instead'); if (d) d.open = true;
+    if (!call('vaiToolUpi')) call('vaiOpenUpiScanner');
+  };
+  window.vaiHomeSafeWalk = function(){ if (!call('openSafeWalkModal')) { if (typeof vaiSwitchTab==='function') vaiSwitchTab('act'); } };
+  window.vaiHomeCall    = function(){ if (!call('openCallModal'))    { if (typeof vaiSwitchTab==='function') vaiSwitchTab('act'); } };
+
+  // ── INIT (runs at parse time — overlays above already exist) ──
+  injectChars();
+  applyStrings(activeLang());
+  renderLangGrid();
+  window.vaiSetCharState('happy');
+  var dbtn = document.getElementById('vlg-default-btn');
+  if (dbtn) dbtn.addEventListener('click', function(){ window.vaiPickLang('en'); });
+  // Keep new-UI strings + injected chars correct across language switches / re-renders.
+  window.addEventListener('chitti:langchange', function(){ injectChars(); applyStrings(activeLang()); });
+  // First load with NO language ever chosen → language gate is the very first screen.
+  if (!hasChosenLang()){
+    var gate = document.getElementById('vai-lang-gate'); if (gate) gate.classList.remove('hidden');
+    var consent = document.getElementById('consent-overlay'); if (consent) consent.classList.add('hidden');
+  }
+})();
+</script>
 </body>
 </html>
