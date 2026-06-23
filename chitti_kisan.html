@@ -37,6 +37,11 @@
     .vaani-note a{color:#ffd79a;font-weight:800}
     .skip{position:absolute;left:-999px;top:0;background:var(--sds-navy);color:#fff;padding:10px 14px;z-index:10000;border-radius:0 0 8px 0}
     .skip:focus{left:0}
+    /* WCAG AA contrast (axe) — page-scoped. Saffron #FF6913 fails 4.5:1 on white / with white text;
+       use dark-saffron #B34700 (≈5.9:1). Header lang-select gets a white bg so navy text reads. */
+    .sds-header .sds-header-actions button.primary{background:#B34700;border-color:#B34700;color:#fff}
+    .sds-tabs button.active{color:#B34700}
+    .sds-header .sds-header-actions #lang-select{background:#fff}
   </style>
   <!-- LANGUAGE: Vaani-canonical. chitti_lang.js owns #lang-select (26 languages, auto-translate whole UI). -->
   <script src="chitti_lang.js" defer></script>
@@ -55,7 +60,7 @@
 
 <!-- Sticky disclaimer (CEOS §32) — non-negotiable -->
 <div class="disc" role="note" style="position:sticky;top:6px;z-index:50;background:#fff3cd;border-bottom:1.5px solid #f0c000;color:#664d03;font-size:13px;padding:8px 12px;text-align:center;font-weight:700">
-  🌾 Chitti Kisan gives general guidance from ICAR/IMD/Agmarknet — <b>not</b> a substitute for a Krishi Vigyan Kendra (KVK) officer or a veterinarian. Pashu emergency: <b>Pashu Helpline 1962</b>. Mandi prices are live from Agmarknet — verify before selling. Chitti is a matchmaker, never a delivery/payment platform.
+  🌾 Chitti Kisan gives general guidance from ICAR/IMD/Agmarknet — <b>not</b> a substitute for a Krishi Vigyan Kendra (KVK) officer or a veterinarian. Pashu emergency: <a href="tel:1962" aria-label="Call Pashu Helpline 1962" style="color:#7f1d1d;font-weight:900;text-decoration:underline">📞 Pashu Helpline 1962</a>. Mandi prices are live from Agmarknet — verify before selling. Chitti is a matchmaker, never a delivery/payment platform.
 </div>
 
 <!-- Navy header (.sds-header) with ← Vaani button -->
@@ -68,9 +73,9 @@
     </div>
   </div>
   <div class="sds-header-actions">
-    <a class="sds-btn ghost vaani-back" href="chitti_vaani.html" aria-label="Back to Chitti Vaani" style="min-height:40px;padding:8px 12px;color:#fff;text-decoration:none">← Vaani</a>
+    <a class="sds-btn ghost vaani-back" href="chitti_vaani.html" aria-label="Back to Chitti Vaani" style="min-height:44px;padding:8px 12px;color:#fff;text-decoration:none">← Vaani</a>
     <label for="lang-select" style="display:flex;align-items:center;gap:4px">🌐
-      <select id="lang-select" class="sds-select" aria-label="Choose language" style="min-height:40px;padding:6px 10px;width:auto;color:var(--sds-navy)"></select>
+      <select id="lang-select" class="sds-select" aria-label="Choose language" style="min-height:44px;padding:6px 10px;width:auto;color:var(--sds-navy);background:#fff"></select>
     </label>
     <button type="button" class="primary" onclick="kisanReadPage()" aria-label="Read this page aloud">🔊 Read page</button>
   </div>
@@ -248,7 +253,7 @@
   function render(elId, klass, html, speakText){
     var box = $(elId); if (!box) return;
     box.innerHTML = '<div class="sds-bubble ' + klass + '" style="margin:0">' + html +
-      '<div style="margin-top:10px"><button type="button" class="sds-btn ghost" style="min-height:42px;padding:8px 12px" onclick="kisanSpeak(this)" data-say="' + esc(speakText||'') + '">🔊 Sun</button></div></div>';
+      '<div style="margin-top:10px"><button type="button" class="sds-btn ghost" style="min-height:44px;padding:8px 12px" onclick="kisanSpeak(this)" data-say="' + esc(speakText||'') + '">🔊 Sun</button></div></div>';
   }
   window.kisanSpeak = function(btn){ speak(btn.getAttribute('data-say') || ''); };
 
