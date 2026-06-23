@@ -54,6 +54,8 @@ def recognise_text(
     lat: float | None = None,
     lng: float | None = None,
     radius_km: float = 5.0,
+    memory_context: str = "",   # accepted for a uniform scan call; text path is
+                                # deterministic (no LLM) so there is no prompt to inject into.
 ) -> dict:
     """
     Fuzzy-matches the typed/spoken name against the brand DB. Returns the
@@ -136,7 +138,7 @@ def _strip_json_fences(s: str) -> str:
     return s.strip()
 
 
-def _raw_vision_call(image_bytes: bytes, mime: str, safe_prompt: str) -> str:
+def _raw_vision_call(image_bytes: bytes, mime: str, safe_prompt: str, memory_context: str = "") -> str:
     """Pure provider call — no quadrails wrapping here. Returns the raw
     model text (the JSON-fenced string the prompt asks for).
 
@@ -166,6 +168,11 @@ def _raw_vision_call(image_bytes: bytes, mime: str, safe_prompt: str) -> str:
         "temperature": 0.1,
         "response_format": {"type": "json_object"},
     }
+    # Chitti Memory OS (BO1): prepend consented user-memory as a SYSTEM message.
+    # The strict OCR user-prompt is untouched; empty memory → no system message
+    # → byte-identical to the no-memory call.
+    if memory_context:
+        body["messages"].insert(0, {"role": "system", "content": memory_context})
     headers = {
         "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
         "Content-Type": "application/json",
@@ -184,7 +191,7 @@ def _raw_vision_call(image_bytes: bytes, mime: str, safe_prompt: str) -> str:
 _VISION_USER_TEXT = "Identify this Indian medicine from the uploaded image."
 
 
-def _vision_extract(image_bytes: bytes, mime: str) -> dict:
+def _vision_extract(image_bytes: bytes, mime: str, memory_context: str = "") -> dict:
     """
     Send the image to the vision model and parse the JSON. Returns a dict
     with the fields above + a `_raw` key with the model output for
@@ -211,7 +218,7 @@ def _vision_extract(image_bytes: bytes, mime: str) -> dict:
             hooks = None
 
         def _call(safe_prompt: str) -> str:
-            return _raw_vision_call(image_bytes, mime, safe_prompt or _VISION_PROMPT)
+            return _raw_vision_call(image_bytes, mime, safe_prompt or _VISION_PROMPT, memory_context=memory_context)
 
         if hooks is not None:
             wrapped = hooks.wrap_llm(
@@ -250,6 +257,7 @@ def recognise_image(
     lat: float | None = None,
     lng: float | None = None,
     radius_km: float = 5.0,
+    memory_context: str = "",
 ) -> dict:
     """
     Run the image through DeepSeek vision, then look the result up in the
@@ -265,7 +273,7 @@ def recognise_image(
             "speak_hi": "कोई इमेज नहीं मिली।",
         }
 
-    extracted = _vision_extract(image_bytes, mime)
+    extracted = _vision_extract(image_bytes, mime, memory_context=memory_context)
     if "_error" in extracted:
         return {
             "ok": False,
