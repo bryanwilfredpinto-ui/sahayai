@@ -218,3 +218,47 @@ Chitti Psychology is India's voice-first emotional wellbeing companion. It is NO
 
 **CEOS COMPLETE — CHITTI PSYCHOLOGY | Version 1.0 | June 2026**
 **Push:** `ceos_psychology.md` → repo root → sahayai.in/ceos_psychology.md
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] Helpline numbers still active (Tele-MANAS 14416 / iCall / Vandrevala / NIMHANS)?
+- [ ] Wysa / Woebot add Hindi?
+- [ ] Any crisis-routing edge case from feedback?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| Wysa / Woebot add Hindi | 🟡 MEDIUM | Chitti is free + Indian context + helpline cascade, not a paywalled chatbot |
+| Generic AI "therapy" chatbots | 🔴 HIGH | Chitti holds a strict therapist-boundary + crisis cascade (Tele-MANAS 14416); never role-plays a clinician |
+| Influencer mental-health content | 🟡 MEDIUM | Chitti is grounded in a basics→PhD corpus with devil's-advocate + confidence scoring |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Emotional / conversation data — on-device, never sold
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Crisis safety:** self-harm signals trigger helpline cascade, never ignored; no clinical record stored on server

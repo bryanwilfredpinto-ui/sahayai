@@ -186,3 +186,47 @@ Chitti News is India's voice-first accessible news assistant. It reads today's t
 
 **CEOS COMPLETE — CHITTI NEWS | Version 1.0 | June 2026**
 **Push:** `ceos_news.md` → repo root → sahayai.in/ceos_news.md
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] New RSS sources to add / source reliability change?
+- [ ] Inshorts / DailyHunt add fact-check?
+- [ ] New state × language coverage gap?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| Inshorts / DailyHunt add fact-check | 🟡 MEDIUM | Chitti gives a cross-source verdict + Chitti's Take + hard neutrality guardrails |
+| Google News adds Hindi summaries | 🟡 MEDIUM | Chitti is state-aware + per-language + per-category, voice-read |
+| AI news summarisers hallucinate | 🔴 HIGH | Chitti links every source and never fabricates — fact-checker cross-references ≥2 sources |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** For You category profile (👍/👎) — localStorage only, NEVER synced to backend
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Privacy lock:** personalisation profile never leaves the device

@@ -200,3 +200,47 @@ Chitti Fundamentals is India's voice-first stock fundamentals assistant for Nift
 
 **CEOS COMPLETE — CHITTI FUNDAMENTALS | Version 1.0 | June 2026**
 **Push:** `ceos_fundamentals.md` → repo root → sahayai.in/ceos_fundamentals.md
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] SEBI rule change affecting disclosures?
+- [ ] screener.in schema / Nifty constituents changed?
+- [ ] Tickertape / Screener add Hindi voice?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| Tickertape / Screener add Hindi voice | 🟡 MEDIUM | Chitti is voice-first + plain-Hindi + free, for non-English Tier-2/3 investors |
+| Broker apps add fundamental AI | 🟡 MEDIUM | Sell-motivated. Chitti is independent, no brokerage, no tips |
+| LLM stock chatbots hallucinate financials | 🔴 HIGH | Chitti is screener.in-grounded and cites the source; NOT SEBI REGISTERED banner always sticky |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Watchlist + screening preferences — local only; no PII, no portfolio amounts stored
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Disclaimer:** NOT SEBI REGISTERED sticky bar + full legal modal on every page — never moved to footer

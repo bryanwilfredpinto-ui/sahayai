@@ -489,3 +489,49 @@ Ask Chitti any legal question by voice through Vaani in your language.
 ### ISL for deaf users (camera)
 Sign-language input and output for the deaf community.
 
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+_Mandatory cross-CEOS plugin appended to the named-section Legal OS doc set._
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] New BNS / BNSS / BSA 2023 amendment to reflect?
+- [ ] Limitation Act / CPA-2019 threshold change?
+- [ ] LegalKart / Vakilsearch add Hindi voice?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| LegalKart / Vakilsearch add Hindi voice | 🟡 MEDIUM | Chitti is free + deterministic deadline-math + the NALSA free-legal-aid (s.12) moat |
+| Govt e-Daakhil / Nyaya portals add AI | 🟡 MEDIUM | B2G complex. Chitti is consumer voice-first, offline-first deterministic engine |
+| LLM legal chatbots hallucinate sections / limitation | 🔴 HIGH | In law a DEADLINE is money-math — exact, never hallucinated. RAG cite-or-refuse; never substitutes a lawyer |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Notices / contracts (camera), case profile + limitation dates — on-device, never sold
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Disclaimer:** supports, never replaces, a qualified advocate; server-enforced on every response

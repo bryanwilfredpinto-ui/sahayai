@@ -189,3 +189,47 @@ Chitti UPI Guard is India's voice-first UPI fraud detection tool. A user pastes 
 
 **CEOS COMPLETE — CHITTI UPI GUARD | Version 1.0 | June 2026**
 **Push:** `ceos_upi.md` → repo root → sahayai.in/ceos_upi.md
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] RBI / NPCI rule change affecting fraud rules?
+- [ ] New scam vector / fraud pattern emerging?
+- [ ] GPay / PhonePe add fraud AI?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| GPay / PhonePe add fraud warnings | 🟡 MEDIUM | Chitti is independent + RBI 2026 rule cards + voice explanation for the four users |
+| Banks add per-app fraud AI | 🟡 MEDIUM | Per-bank silos. Chitti is universal across any UPI app |
+| New scam vectors outpace rules | 🔴 HIGH | Chitti swarm learns new patterns; community alerts warn nearby users |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Transaction screenshot / text — classified locally; NO payment data stored (fraud classifier only)
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Scope:** Chitti is a fraud classifier, never a payment-intent path; never moves money

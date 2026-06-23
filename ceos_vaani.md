@@ -976,3 +976,49 @@ Chitti Vaani provides AI-assisted voice commands for general use.
 **Sections: 37 | Build Phases: 10 | Skills: 17 | SOPs: 15 | Specialists: 15 | Version: 1.0 | June 2026**  
 **Push to:** repo root as `ceos_vaani.md` → live at `https://sahayai.in/ceos_vaani.md`  
 **Read first in every Claude session:** https://sahayai.in/sahay_master.md + https://sahayai.in/ceos_vaani.md
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 36: MONTHLY RELEVANCE REVIEW
+
+_Mandatory cross-CEOS plugin — numbered to avoid collision with existing §33–35 (Certification / Deliverables / Success Metrics)._
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] New Chitti added that the intent-router must reach?
+- [ ] Siri / Google Assistant / Copilot feature worth copying?
+- [ ] Bhashini ULCA registration status — Voice Factory Phase 2 unblocked?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 37: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| Google Assistant deepens Indian-language support | 🔴 HIGH | Chitti is four-user (blind/deaf/mute/illiterate) + emergency family-cascade + 15 specialists + Golden Rule |
+| Jio / Ola launch a consumer PA | 🔴 HIGH | Speed to market + community trust + accessibility moat that is hard to replicate |
+| OEM assistants bundle on-device | 🟡 MEDIUM | Generic. Chitti has SahayAI specialist depth + memory + confirm-before-every-action |
+
+---
+
+## SECTION 38: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Profile, memory, and contacts (for confirm-gated actions) — on-device; emergency-cascade contacts
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Golden Rule:** no side-effecting action without explicit Yes; **Emergency:** family cascade, never auto-dial cops

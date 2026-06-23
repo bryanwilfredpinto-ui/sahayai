@@ -535,3 +535,47 @@ A higher north-star with **lower** suggested spend is always the better quarter.
 - Voice-first for the blind, ISL + symbols for the deaf, tap-only for the mute, icons +
   voice for those who can't read, large text + slow speech for seniors. 26 languages.
 
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] Budget / Finance Act change affecting tax slabs?
+- [ ] GST rate or ITR form change?
+- [ ] ClearTax / Zoho add Hindi voice?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| ClearTax / Zoho add Hindi voice | 🟡 MEDIUM | Chitti is free + voice-first + Govt-Benefits "money owed" moat |
+| Govt launches official AI tax assistant | 🟡 MEDIUM | B2G complex UI. Chitti is consumer-first, simple, voice |
+| LLM tax chatbots hallucinate numbers | 🔴 HIGH | Chitti money-math is deterministic — to the rupee, never hallucinated. Server-enforced disclaimer |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Financial data (income, GST, transactions) — local-first; server-enforced disclaimer on every response
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Sensitive:** financial data treated as sensitive personal data; never sold, never used for ads

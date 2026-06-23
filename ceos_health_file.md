@@ -224,3 +224,47 @@ Chitti Health File is India's voice-first family health record manager. Upload a
 
 **CEOS COMPLETE — CHITTI HEALTH FILE | Version 1.0 | June 2026**
 **Push:** `ceos_health_file.md` → repo root → sahayai.in/ceos_health_file.md
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] ABDM / ABHA record format or API change?
+- [ ] Practo / 1mg add personal health records?
+- [ ] New non-diagnostic health-vision capability ready?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| ABDM / ABHA official app expands | 🟡 MEDIUM | Govt B2G. Chitti adds Guardian Memory + voice + four-user accessibility |
+| Practo / 1mg add health records | 🟡 MEDIUM | Commerce-motivated. Chitti is independent, no pharmacy/clinic selling |
+| AI symptom checkers claim diagnosis | 🔴 HIGH | Chitti NEVER diagnoses — always honest "doctor se milein". 501 coming_soon where vision unbuilt |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Health records + scans (sensitive personal data) — on-device, never sold, never shared
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Sensitive:** health data under DPDP §2 — explicit per-record consent; raw images processed locally

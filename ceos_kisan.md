@@ -297,8 +297,9 @@ And it connects farmers directly to consumers — no middlemen — through a com
 
 ---
 
-## SECTION 35: DPDP COMPLIANCE
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
 
+**Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
 **Data collected:** Farm location (GPS, rounded to district), crop/livestock profile, marketplace listings
 **Consent:** Explicit opt-in for each data type at onboarding
 **Storage:** Farm profile on device (UUID). Marketplace listings on server (FSSAI-verified farmers only)

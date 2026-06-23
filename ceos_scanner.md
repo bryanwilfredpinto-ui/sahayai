@@ -194,3 +194,47 @@ Chitti Scanner lets any Indian scan a food packet, medicine, cosmetic, or produc
 
 **CEOS COMPLETE — CHITTI SCANNER | Version 1.0 | June 2026**
 **Push:** `ceos_scanner.md` → repo root → sahayai.in/ceos_scanner.md
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] FSSAI rule / labelling change?
+- [ ] New barcode / packaging standards?
+- [ ] Google Lens adds FSSAI lookup?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| Google Lens adds FSSAI lookup | 🟡 MEDIUM | Chitti is India-FSSAI + MedUPI deep-link + community fake-product alerts |
+| Brand apps add their own scanner | 🟡 MEDIUM | Single-brand. Chitti scans everything, independent |
+| Fake-product networks scale up | 🔴 HIGH | Chitti community-alert flywheel + annual FSSAI report + real-time nearby warnings |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Scan data (what / where-pincode / when / result) — user-owned, anonymised before analysis, never sold
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Camera Intelligence contract:** face crops blurred, GPS rounded to pincode centroid; "Chitti forget" wipes all captures

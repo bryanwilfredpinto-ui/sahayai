@@ -230,3 +230,46 @@ Chitti Logo & Video Creation is India's voice-first AI design studio. A kirana o
 
 **CEOS COMPLETE — CHITTI LOGO & VIDEO | Version 1.0 | June 2026**
 **Push:** `ceos_logo_video.md` → repo root → sahayai.in/ceos_logo_video.md
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] Image/video generation API keys landed (un-stub)?
+- [ ] Canva / Looka add Hindi?
+- [ ] Video-gen models improved enough to ship real output?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| Canva / Looka add Hindi | 🟡 MEDIUM | Chitti is free + voice for non-designer shopkeepers |
+| AI video tools flood the market | 🟡 MEDIUM | Chitti ships an honest stub until keys land, then community-powered — never fakes output |
+| Generic logo AI | 🟢 LOW | Chitti is India-context (shop names, festivals, vernacular) |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Brand inputs (name, colours, tagline) — local only; intentional honest stub, no generation data retained
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted

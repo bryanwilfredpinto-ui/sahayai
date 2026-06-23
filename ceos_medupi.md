@@ -673,3 +673,49 @@ Data Sources:
 **CEOS COMPLETE — CHITTI MEDUPI**
 **Sections: 33 | Skills: 10 | SOPs: 8 | Build Phases: 10 | Version: 1.0 | June 2026**
 **Push to:** repo root as `ceos_medupi.md` → live at `https://sahayai.in/ceos_medupi.md`
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 34: MONTHLY RELEVANCE REVIEW
+
+_Mandatory cross-CEOS plugin — numbered to avoid collision with existing §33 (Sign-off)._
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] NPPA price ceiling / DPCO revision?
+- [ ] New Jan Aushadhi generics added?
+- [ ] Tata 1mg / PharmEasy add same-composition match?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 35: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| 1mg / PharmEasy add generic finder | 🟡 MEDIUM | Commerce-motivated (they sell). Chitti is independent + Jan Aushadhi-first + no commission |
+| Govt Jan Aushadhi app adds search | 🟡 MEDIUM | Govt B2G. Chitti adds voice + Family Wallet + strict same-composition matching |
+| AI medicine bots suggest substitutes | 🔴 HIGH | Chitti shows SAME-composition only (never therapeutic); HIGH-risk never switched without doctor |
+
+---
+
+## SECTION 36: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Medicine strips / prescriptions (camera), Family Wallet entries — sensitive health data, on-device, never sold
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted
+- **Sensitive:** medicine/prescription data under DPDP §2; consult-doctor disclaimer on every response

@@ -817,3 +817,46 @@ resale-readiness score) + Ownership Scores (Buy/Maintenance/Safety/Resale). Engi
   voice for those who can't read, large text + slow speech for seniors, big taps for
   motor difficulty. 26 languages. Built for rural users on weak networks.
 
+
+---
+
+<!-- ceos-plugin:3435 -->
+## SECTION 33: MONTHLY RELEVANCE REVIEW
+
+**Owner:** Chitti CTO (Claude Code) + Sire approval
+**Cadence:** 1st Monday every month
+**Trigger:** chitti-founder cron
+
+**Review Checklist:**
+- [ ] New 2-wheeler / EV-scooter brand needing DTC updates?
+- [ ] ARAI recall notices for 2-wheelers updated?
+- [ ] EV 2-wheeler market growth — features becoming P0?
+- [ ] Any competitor added voice/Hindi in this domain?
+- [ ] Any regulatory change affecting this Chitti?
+- [ ] Any DA Kill Shot now becoming real?
+- [ ] THE FORMULA — any app to add/remove?
+
+**Output:** CEOS version bump + updated THE FORMULA + Sire notified via Vaani
+
+---
+
+## SECTION 34: DA KILL SHOTS & SOLUTIONS
+
+| Kill Shot | Threat Level | Solution Built In |
+|---|---|---|
+| GoMechanic / Bike Bazaar add 2W diagnosis | 🟡 MEDIUM | Chitti is free + voice + Hindi, buyer-side. They are booking/commerce-motivated |
+| OEM apps (Hero / Honda / TVS) add diagnosis | 🟡 MEDIUM | Brand-specific only. Chitti covers all brands |
+| Used-bike platforms add inspection | 🟡 MEDIUM | Seller-side inspection. Chitti is buyer-side |
+
+---
+
+## SECTION 35: DPDP ACT 2023 COMPLIANCE
+
+- **Data Fiduciary:** Sahay AI (Bryan Wilfred Pinto, Founder)
+- **Grievance Officer:** sire@sahayai.in | 7 working days
+- **Data collected:** Vehicle profile (model/km/service/insurance/PUC dates), location rounded to city level
+- **Consent:** explicit opt-in per domain
+- **Storage:** device UUID + Turso (India region only)
+- **User rights:** access, correct, erase, grievance
+- **"Chitti forget":** ALL data deleted within 24 hours
+- **Tombstone:** count preserved, PII deleted

@@ -1478,6 +1478,50 @@ def _create_app() -> Flask:
 _sched: BackgroundScheduler | None = None
 
 
+# 21 CEOS doc sets at repo root. Section 33 (Monthly Relevance Review) of each
+# is due on the 1st Monday of every month per the CEOS plugin contract (2026-06-23).
+CEOS_CHITTIS = [
+    "vaani", "medupi", "ca", "legal", "government", "news", "news_ai", "upi",
+    "scanner", "fundamentals", "psychology", "logo_video", "health_file",
+    "empowerment", "2wheeler", "4wheeler", "fashion", "voice_factory",
+    "founder", "isl", "kisan",
+]
+
+
+def run_monthly_relevance_review() -> dict:
+    """1st Monday 07:00 IST — Monthly Relevance Review reminder for ALL Chittis.
+
+    Per Section 33 of every CEOS (the mandatory cross-CEOS plugin, 2026-06-23):
+    on the first Monday of each month, Chitti Founder reminds Sire to walk each
+    CEOS's Monthly Relevance Review checklist — new competitor? competitor added
+    voice/Hindi? regulatory change? DA Kill Shot becoming real? THE FORMULA
+    drift? This is a NOTIFICATION, not an auto-edit; CEOS version bumps stay
+    human-approved. Honest stub: if SMTP is unset, send_report_email logs and
+    returns False — never fakes success (Constitution Art 3).
+    """
+    items = "".join(
+        f"<li><b>Chitti {c.replace('_', ' ').title()}</b> — review "
+        f"<code>ceos_{c}.md</code> §33</li>"
+        for c in CEOS_CHITTIS
+    )
+    subject = f"[Chitti Founder] Monthly Relevance Review due — {len(CEOS_CHITTIS)} CEOS"
+    html = (
+        "<h2>Monthly Relevance Review — 1st Monday</h2>"
+        "<p>Walk Section 33 of each CEOS: new competitor? competitor added "
+        "voice/Hindi? regulatory change? DA Kill Shot becoming real? THE FORMULA "
+        "drift? user-feedback pattern needing a new BO?</p>"
+        f"<ol>{items}</ol>"
+        "<p>Output per CEOS: version bump + updated THE FORMULA + Sire notified "
+        "via Vaani.</p>"
+    )
+    ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
+    log.info(
+        "[monthly-review] reminder for %d CEOS · email_sent=%s",
+        len(CEOS_CHITTIS), ok,
+    )
+    return {"chittis": len(CEOS_CHITTIS), "email_sent": bool(ok)}
+
+
 def _start_scheduler() -> None:
     global _sched
     if _sched is not None:
@@ -1527,6 +1571,14 @@ def _start_scheduler() -> None:
         run_ui_agent_job, "cron",
         day_of_week="sun", hour=AGENTS_UI_HOUR_IST, minute=AGENTS_UI_MINUTE_IST,
         timezone=_IST, id="quality_agents_ui", replace_existing=True,
+    )
+    # Monthly Relevance Review (2026-06-23 CEOS plugin) — 1st Monday 07:00 IST.
+    # day="1-7" AND day_of_week="mon" → the Monday that falls in the first week.
+    _sched.add_job(
+        run_monthly_relevance_review, "cron",
+        day="1-7", day_of_week="mon",
+        hour=REPORT_HOUR_IST, minute=REPORT_MINUTE_IST,
+        timezone=_IST, id="monthly_relevance_review", replace_existing=True,
     )
     if SELF_PING_ENABLED:
         _sched.add_job(
