@@ -76,6 +76,8 @@ See [SAHAYAI_MASTER.md §2g](SAHAYAI_MASTER.md) for the full architectural callo
 | **Evolution owner** | [chitti-medupi/skills/FEATURES.md](chitti-medupi/skills/FEATURES.md) + Swarm Intelligence (HIGH-risk → Sire approves before push to skills/*.md). |
 | **Stale data rule** | Jan Aushadhi price catalog: weekly refresh. NPPA NLEM ceiling list: monthly. Brand-to-molecule mapping: monthly diff against drug regulator updates. Medicine composition itself is treated as immutable (matched on master DB, never inferred). |
 
+> **Chitti Health File = MedUPI Skill 9, NOT a standalone Chitti.** The health-file capability (document upload, DeepSeek-vision OCR, family profiles, plain-language jargon explainer, follow-up reminders) is **Skill 9 inside Chitti MedUPI** — reached via Vaani → MedUPI → Health File tab, never as its own product. There is **no separate `chitti-health-file` Chitti** in this SOP and no standalone user surface for it. `ceos_health_file.md` stays at repo root as **reference documentation only**; it does not promote Health File to a 16th Chitti. Anything that would create a standalone Health File product (its own SOP row, its own Vaani route, its own ROLE/QUALITY pair) is out of scope by this rule.
+
 ## 3. Chitti CA — tax assistant (HIGH-risk)
 
 | Field | Value |

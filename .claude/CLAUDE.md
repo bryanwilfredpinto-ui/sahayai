@@ -5,6 +5,7 @@ This is the **new-session rule — MANDATORY (LOCKED 2026-05-13, EXTENDED 2026-0
 ## MANDATORY FIRST STEP — every new Claude Code session
 
 > 1. **Read [`../SAHAYAI_MASTER.md`](../SAHAYAI_MASTER.md)**
+> 1b. **Read [`../CLAUDE_COFOUNDER_BRIEF.md`](../CLAUDE_COFOUNDER_BRIEF.md)** — the cofounder map: the single most important truth, what is built (all Chittis + URLs + status), locked decisions in brief, the documentation map, honest gaps, and the current sprint. **SAHAYAI_MASTER.md + CLAUDE_COFOUNDER_BRIEF.md together = full context in 15 minutes.**
 > 2. **Read [`../QUALITY_STATUS.md`](../QUALITY_STATUS.md)** — covers BOTH the backend matrix (§1, six axes) AND the frontend quality gates (§1a — feedback-widget.js + `data-chitti-response`, chitti_a11y.js, User Disability Profile prompt, language auto-detect, ISL plugin). Per SAHAYAI_MASTER.md §7, no page ships without all five frontend gates.
 > 3. **Also read [`../CHITTI_SOP.md`](../CHITTI_SOP.md) before doing anything** — the 7-field standard operating profile (Objective · Primary user · Success metric · Quality standard · Scope · Evolution owner · Stale data rule) for all 15 Chittis. Apply per-Chitti when you touch that Chitti's code or docs.
 > 4. **Report to Bryan, before anything else:**
