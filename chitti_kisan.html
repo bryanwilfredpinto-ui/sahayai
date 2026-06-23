@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-kisan/  (CEOS v1.0, built 2026-06-23) -->
+<!-- Chitti Kisan — India's voice-first agriculture, livestock & farm-to-table companion.
+     Design system: sahayai_design_system.css is the ONLY stylesheet (navy #002366, F7F7F4, 18px, 48px taps, 375px-first).
+     Language: chitti_lang.js owns #lang-select (26 langs, Vaani-canonical).
+     Deterministic engine: chitti_kisan_engine.js (window.ChittiKisan) — rules are the product.
+     HIGH BOs (CEOS §25): BO3 soil · BO4 crop · BO5 irrigation · BO6 organic · BO7 1962 · BO8 livestock · BO9 symptom→1962.
+     BO1 (IMD live) + BO2 (Agmarknet live) = honest COMING SOON (backend + API keys). Art-3: NEVER fabricate prices. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chitti Kisan · Your voice-first farming, livestock & garden companion</title>
+  <meta name="description" content="Chitti Kisan — India's voice-first agriculture companion. Soil-aware crop advice, when-to-water guidance, organic alternatives, livestock daily care with Pashu Helpline 1962, mandi prices and weather — by voice, in 26 Indian languages, free. Built for blind, deaf, mute and illiterate farmers too.">
+  <meta name="chitti-page-desc" content="Chitti Kisan. Aapka kheti aur pashu saathi. Kaunsi fasal, kab paani, organic vikalp, pashu ki dekhbhaal aur Pashu Helpline 1962 — awaaz se, aapki bhasha mein, muft.">
+  <meta name="chitti-features" content="chitti-kisan/skills/FEATURES.md">
+  <meta name="theme-color" content="#002366">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E🌾%3C/text%3E%3C/svg%3E">
+  <!-- ONE design system, every page -->
+  <link rel="stylesheet" href="sahayai_design_system.css">
+  <style>
+    /* Page-local helpers only — no token overrides of the design system. */
+    .kisan-result{margin-top:12px}
+    .kisan-row{display:flex;gap:10px;flex-wrap:wrap}.kisan-row > *{flex:1;min-width:140px}
+    .kisan-chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+    .kisan-chip{min-height:44px;border:1.5px solid var(--sds-line);background:#fff;border-radius:999px;padding:8px 14px;font-size:15px;font-weight:700;color:var(--sds-navy);cursor:pointer}
+    .kisan-chip[aria-pressed="true"]{background:#dcfce7;border-color:var(--sds-green)}
+    .pashu-1962{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#991b1b,#dc2626);color:#fff;border-radius:16px;padding:16px;margin:0 0 14px;text-decoration:none}
+    .pashu-1962 .num{font-size:30px;font-weight:900;line-height:1}
+    .pashu-1962 .lbl{font-size:15px;font-weight:800}
+    .pashu-1962 .sub{font-size:13px;opacity:.92;font-weight:600}
+    .vet-note{background:#fee2e2;border:1.5px solid #fca5a5;color:#7f1d1d;border-radius:12px;padding:12px;font-size:14px;font-weight:700;margin:0 0 14px}
+    .coming{display:inline-block;background:#fef3c7;color:#78350f;border:1px solid #fcd34d;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:800}
+    .prov{font-size:12px;color:var(--sds-muted);margin-top:10px;border-top:1px dashed var(--sds-line);padding-top:8px}
+    .vaani-back{background:rgba(255,255,255,.16)!important;border:1px solid rgba(255,255,255,.32)!important}
+    .vaani-note{margin-top:10px;font-size:13px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.30);border-radius:10px;padding:8px 12px;color:#fff}
+    .vaani-note a{color:#ffd79a;font-weight:800}
+    .skip{position:absolute;left:-999px;top:0;background:var(--sds-navy);color:#fff;padding:10px 14px;z-index:10000;border-radius:0 0 8px 0}
+    .skip:focus{left:0}
+  </style>
+  <!-- LANGUAGE: Vaani-canonical. chitti_lang.js owns #lang-select (26 languages, auto-translate whole UI). -->
+  <script src="chitti_lang.js" defer></script>
+  <!-- A11Y SUBSTRATE: Disability Profile, ISL panel, Feature Discovery, read-page, voice. -->
+  <script src="chitti_a11y.js" defer></script>
+  <!-- PER-RESPONSE 5-ELEMENT WIDGET: 🔊 / 🤖 / 👍 / 👎 / ✏️ on every [data-chitti-response] card. -->
+  <script src="feedback-widget.js" data-page="chitti_kisan" defer></script>
+  <!-- DETERMINISTIC ENGINE: rules are the product. -->
+  <script src="chitti_kisan_engine.js" defer></script>
+</head>
+<body class="sds-page">
+<a href="#main" class="skip">Skip to content</a>
+
+<!-- Tricolour stripe — fixed at top -->
+<div class="sds-tricolour fixed" aria-hidden="true"></div>
+
+<!-- Sticky disclaimer (CEOS §32) — non-negotiable -->
+<div class="disc" role="note" style="position:sticky;top:6px;z-index:50;background:#fff3cd;border-bottom:1.5px solid #f0c000;color:#664d03;font-size:13px;padding:8px 12px;text-align:center;font-weight:700">
+  🌾 Chitti Kisan gives general guidance from ICAR/IMD/Agmarknet — <b>not</b> a substitute for a Krishi Vigyan Kendra (KVK) officer or a veterinarian. Pashu emergency: <b>Pashu Helpline 1962</b>. Mandi prices are live from Agmarknet — verify before selling. Chitti is a matchmaker, never a delivery/payment platform.
+</div>
+
+<!-- Navy header (.sds-header) with ← Vaani button -->
+<header class="sds-header">
+  <div class="sds-brand-row">
+    <span class="sds-logo" aria-hidden="true">🌾</span>
+    <div class="sds-brand">
+      <div class="sds-brand-name">Chitti Kisan</div>
+      <div class="sds-tagline">Aapka kheti, pashu aur bagicha saathi — 24×7, awaaz se, aapki bhasha mein. Free.</div>
+    </div>
+  </div>
+  <div class="sds-header-actions">
+    <a class="sds-btn ghost vaani-back" href="chitti_vaani.html" aria-label="Back to Chitti Vaani" style="min-height:40px;padding:8px 12px;color:#fff;text-decoration:none">← Vaani</a>
+    <label for="lang-select" style="display:flex;align-items:center;gap:4px">🌐
+      <select id="lang-select" class="sds-select" aria-label="Choose language" style="min-height:40px;padding:6px 10px;width:auto;color:var(--sds-navy)"></select>
+    </label>
+    <button type="button" class="primary" onclick="kisanReadPage()" aria-label="Read this page aloud">🔊 Read page</button>
+  </div>
+  <div class="vaani-note">🎙️ This is the developer/debug surface. You actually use Chitti Kisan by asking <a href="chitti_vaani.html">Chitti Vaani</a> — "Chitti, aaj paani doon?" — Vaani routes here for you.</div>
+</header>
+
+<main id="main" role="main">
+
+  <!-- ───────────────────── GHAR / HOME ───────────────────── -->
+  <section class="sds-tab-panel active" id="tab-ghar" role="tabpanel" aria-label="Home">
+    <div class="sds-card" data-chitti-response="kisan-welcome" data-chitti-section="Welcome">
+      <div class="sds-chip green" style="margin-bottom:8px">FREE · NO SIGN-UP · 26 LANGUAGES</div>
+      <h2 class="sds-card-title"><span class="ico" aria-hidden="true">🌾</span> Ek saathi — poori kheti, pashu aur bagicha</h2>
+      <p class="sds-card-sub">Chitti ko apni jagah aur fasal ek baar batao. Phir woh batata hai kaunsi fasal, kab paani dena hai, urea ki jagah kaunsa organic, aur pashu beemar ho to seedha <b>Pashu Helpline 1962</b>. Mandi bhav aur mausam bhi — sab awaaz se.</p>
+      <div class="kisan-row" style="margin-top:6px">
+        <button class="sds-btn primary" type="button" onclick="kisanGo('kheti')">🌱 Kheti salah</button>
+        <button class="sds-btn accent" type="button" onclick="kisanGo('mandi')">💰 Mandi bhav</button>
+        <button class="sds-btn ghost" type="button" onclick="kisanGo('pashu')">🐄 Pashu dekhbhaal</button>
+      </div>
+    </div>
+
+    <div class="sds-card" data-chitti-response="kisan-soil" data-chitti-section="Soil">
+      <h2 class="sds-card-title"><span class="ico" aria-hidden="true">🟤</span> Aapki mitti (Soil) — BO3</h2>
+      <p class="sds-card-sub">Apna zila + rajya batao — Chitti NBSS&amp;LUP soil-map se mitti ka prakaar aur usme uchit fasal batata hai. (Yeh soil-test nahi, district-level anumaan hai.)</p>
+      <div class="kisan-row">
+        <div class="sds-field"><label for="soil-dist">Zila (District)</label><input id="soil-dist" class="sds-input" placeholder="e.g. Nagpur" autocomplete="off"></div>
+        <div class="sds-field"><label for="soil-state">Rajya (State)</label><input id="soil-state" class="sds-input" placeholder="e.g. Maharashtra" autocomplete="off"></div>
+      </div>
+      <button class="sds-btn primary block" type="button" onclick="kisanSoil()">Mitti dekho</button>
+      <div class="kisan-result" id="r-soil" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ───────────────────── KHETI / CROP ───────────────────── -->
+  <section class="sds-tab-panel" id="tab-kheti" role="tabpanel" aria-label="Kheti">
+    <div class="sds-card" data-chitti-response="kisan-crop" data-chitti-section="Crop advisor">
+      <h2 class="sds-card-title"><span class="ico" aria-hidden="true">🌱</span> Kaunsi fasal lagaun? — BO4</h2>
+      <p class="sds-card-sub">Zila + rajya batao. Chitti mausam ke hisaab se Kharif/Rabi/Zaid season pakadta hai, mitti ke saath milata hai, aur ICAR crop-calendar se fasal + variety + bouni ka samay batata hai.</p>
+      <div class="kisan-row">
+        <div class="sds-field"><label for="crop-dist">Zila</label><input id="crop-dist" class="sds-input" placeholder="e.g. Amravati" autocomplete="off"></div>
+        <div class="sds-field"><label for="crop-state">Rajya</label><input id="crop-state" class="sds-input" placeholder="e.g. Maharashtra" autocomplete="off"></div>
+      </div>
+      <button class="sds-btn primary block" type="button" onclick="kisanCrop()">Fasal salah lo</button>
+      <div class="kisan-result" id="r-crop" aria-live="polite"></div>
+    </div>
+
+    <div class="sds-card" data-chitti-response="kisan-irrig" data-chitti-section="Irrigation">
+      <h2 class="sds-card-title"><span class="ico" aria-hidden="true">💧</span> Aaj paani doon? — BO5</h2>
+      <p class="sds-card-sub">Chitti soil ki nami-pakad, haal ki baarish aur garmi dekhkar batata hai — paani do ya ruko, aur kitna. (Faaltu paani = jadon ki bimari + bijli/diesel kharcha.)</p>
+      <div class="kisan-row">
+        <div class="sds-field"><label for="irr-dist">Zila</label><input id="irr-dist" class="sds-input" placeholder="e.g. Indore" autocomplete="off"></div>
+        <div class="sds-field"><label for="irr-crop">Fasal</label><input id="irr-crop" class="sds-input" placeholder="e.g. soybean" autocomplete="off"></div>
+      </div>
+      <div class="kisan-chips" role="group" aria-label="Conditions">
+        <button class="kisan-chip" type="button" aria-pressed="false" data-cond="rainedRecently">🌧️ Pichhle 2 din baarish</button>
+        <button class="kisan-chip" type="button" aria-pressed="false" data-cond="soilDry">🏜️ Mitti sookhi lag rahi</button>
+        <button class="kisan-chip" type="button" aria-pressed="false" data-cond="hotSpell">🔥 Garmi tez hai</button>
+      </div>
+      <button class="sds-btn primary block" type="button" onclick="kisanIrrigation()">Bata do</button>
+      <div class="kisan-result" id="r-irrig" aria-live="polite"></div>
+    </div>
+
+    <div class="sds-card" data-chitti-response="kisan-organic" data-chitti-section="Organic">
+      <h2 class="sds-card-title"><span class="ico" aria-hidden="true">🍃</span> Organic vikalp — BO6</h2>
+      <p class="sds-card-sub">Kaunsa chemical use kar rahe ho? Chitti ICAR se uska <b>organic vikalp pehle</b> batata hai. Chemical sirf aakhri vikalp (CEOS Art-2).</p>
+      <div class="kisan-chips" role="group" aria-label="Common inputs">
+        <button class="kisan-chip" type="button" onclick="kisanOrgChip('urea')">Urea</button>
+        <button class="kisan-chip" type="button" onclick="kisanOrgChip('DAP')">DAP</button>
+        <button class="kisan-chip" type="button" onclick="kisanOrgChip('pesticide')">Pesticide</button>
+        <button class="kisan-chip" type="button" onclick="kisanOrgChip('fungicide')">Fungicide</button>
+        <button class="kisan-chip" type="button" onclick="kisanOrgChip('weedicide')">Weedicide</button>
+      </div>
+      <div class="sds-field"><label for="org-in">Ya khud likho (chemical/molecule)</label><input id="org-in" class="sds-input" placeholder="e.g. glyphosate" autocomplete="off"></div>
+      <button class="sds-btn primary block" type="button" onclick="kisanOrganic()">Organic batao</button>
+      <div class="kisan-result" id="r-organic" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ───────────────────── MANDI ───────────────────── -->
+  <section class="sds-tab-panel" id="tab-mandi" role="tabpanel" aria-label="Mandi">
+    <div class="sds-card" data-chitti-response="kisan-mandi" data-chitti-section="Mandi price">
+      <h2 class="sds-card-title"><span class="ico" aria-hidden="true">💰</span> Aaj ka mandi bhav — BO2 <span class="coming">COMING SOON</span></h2>
+      <p class="sds-card-sub">Mandi bhav <b>sirf Agmarknet</b> se aata hai (live backend). Chitti kabhi anumaan se bhav nahi batata (CEOS Art-3). Apni fasal + zila batao — backend judte hi yahan asli bhav dikhega.</p>
+      <div class="kisan-row">
+        <div class="sds-field"><label for="mandi-crop">Fasal</label><input id="mandi-crop" class="sds-input" placeholder="e.g. gehun" autocomplete="off"></div>
+        <div class="sds-field"><label for="mandi-dist">Zila</label><input id="mandi-dist" class="sds-input" placeholder="e.g. Indore" autocomplete="off"></div>
+      </div>
+      <button class="sds-btn accent block" type="button" onclick="kisanMandi()">Bhav poochho</button>
+      <div class="kisan-result" id="r-mandi" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ───────────────────── MAUSAM ───────────────────── -->
+  <section class="sds-tab-panel" id="tab-mausam" role="tabpanel" aria-label="Mausam">
+    <div class="sds-card" data-chitti-response="kisan-weather" data-chitti-section="Weather">
+      <h2 class="sds-card-title"><span class="ico" aria-hidden="true">🌦️</span> Mausam salah — BO1 <span class="coming">LIVE COMING SOON</span></h2>
+      <p class="sds-card-sub">Live 7-din IMD forecast jald aayega (backend + IMD API). Abhi neeche <b>general seasonal salah</b> hai — yeh live bhavishyavaani NAHI hai.</p>
+      <button class="sds-btn primary block" type="button" onclick="kisanWeather()">Aaj ki seasonal salah</button>
+      <div class="kisan-result" id="r-weather" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ───────────────────── PASHU / LIVESTOCK ───────────────────── -->
+  <section class="sds-tab-panel" id="tab-pashu" role="tabpanel" aria-label="Pashu">
+    <!-- BO7 — Pashu Helpline 1962 ALWAYS one tap visible -->
+    <a class="pashu-1962" href="tel:1962" aria-label="Call Pashu Helpline 1962">
+      <span aria-hidden="true" style="font-size:30px">🚑</span>
+      <span><span class="num">1962</span><br><span class="lbl">Pashu Helpline — abhi call karo</span><br><span class="sub">Pashu beemar ho to seedha doctor. Free, poore Bharat mein.</span></span>
+    </a>
+    <!-- Veterinary disclaimer (CEOS §32 — mandatory on every livestock screen) -->
+    <div class="vet-note" role="note">🩺 Pashu ki bimari ke liye: Pashu Helpline 1962. Chitti kabhi bhi pashu ki bimari ka ilaj nahi batata — sirf doctor batata hai.</div>
+
+    <div class="sds-card" data-chitti-response="kisan-livestock" data-chitti-section="Livestock daily">
+      <h2 class="sds-card-title"><span class="ico" aria-hidden="true">🐄</span> Roz ki dekhbhaal — BO8</h2>
+      <p class="sds-card-sub">Apna pashu chuno — Chitti roz ki checklist deta hai. (Pashu ki sehat ka data sirf aapke phone mein rehta hai, server par nahi.)</p>
+      <div class="kisan-chips" role="group" aria-label="Animal type">
+        <button class="kisan-chip" type="button" onclick="kisanLivestock('cattle')">🐄 Gaay/Bhains</button>
+        <button class="kisan-chip" type="button" onclick="kisanLivestock('poultry')">🐔 Murgi/Batak</button>
+        <button class="kisan-chip" type="button" onclick="kisanLivestock('goat')">🐐 Bakri/Bhed</button>
+        <button class="kisan-chip" type="button" onclick="kisanLivestock('pig')">🐖 Suar</button>
+      </div>
+      <div class="kisan-result" id="r-livestock" aria-live="polite"></div>
+    </div>
+
+    <div class="sds-card" data-chitti-response="kisan-symptom" data-chitti-section="Symptom check">
+      <h2 class="sds-card-title"><span class="ico" aria-hidden="true">⚠️</span> Lakshan checker → 1962 — BO9</h2>
+      <p class="sds-card-sub">Pashu ke lakshan likho ya bolo. Chitti <b>kabhi ilaj nahi batata</b> — sirf turant doctor (1962) tak pahuchata hai aur kya karna hai woh batata hai.</p>
+      <div class="sds-field"><label for="symp-in">Lakshan (symptoms)</label><textarea id="symp-in" class="sds-textarea" placeholder="e.g. gaay ko tez bukhar hai, chaara nahi kha rahi"></textarea></div>
+      <button class="sds-btn danger block" type="button" onclick="kisanSymptom()">Lakshan jaancho</button>
+      <div class="kisan-result" id="r-symptom" aria-live="polite"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Bottom 5-tab nav (.sds-tabs) -->
+<nav class="sds-tabs" role="tablist" aria-label="Chitti Kisan sections">
+  <button type="button" class="active" data-go="ghar"   role="tab" aria-selected="true"><span class="ico" aria-hidden="true">🏠</span>Ghar</button>
+  <button type="button" data-go="kheti"  role="tab" aria-selected="false"><span class="ico" aria-hidden="true">🌱</span>Kheti</button>
+  <button type="button" data-go="mandi"  role="tab" aria-selected="false"><span class="ico" aria-hidden="true">💰</span>Mandi</button>
+  <button type="button" data-go="mausam" role="tab" aria-selected="false"><span class="ico" aria-hidden="true">🌦️</span>Mausam</button>
+  <button type="button" data-go="pashu"  role="tab" aria-selected="false" class="alert"><span class="ico" aria-hidden="true">🐄</span>Pashu</button>
+</nav>
+
+<footer style="max-width:560px;margin:0 auto;padding:16px;color:var(--sds-muted);font-size:12.5px;text-align:center">
+  Chitti Kisan · CEOS v1.0 · Built on DeepSeek + IMD + Agmarknet + ICAR + NBSS&amp;LUP · sahayai.in
+</footer>
+
+<script>
+/* ── Chitti Kisan page controller (deterministic, voice-first) ── */
+(function () {
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function E(){ return window.ChittiKisan; }
+  function monthIdx(){ try { return new Date().getMonth(); } catch(e){ return 6; } }
+  function speak(t){ try { if (window.Chitti && Chitti.a11y && Chitti.a11y.speak) return Chitti.a11y.speak(t); } catch(e){} try { var u=new SpeechSynthesisUtterance(t); speechSynthesis.speak(u);}catch(e){} }
+
+  // Tabs
+  function go(name){
+    document.querySelectorAll('.sds-tab-panel').forEach(function(p){ p.classList.remove('active'); });
+    var panel = $('tab-' + name); if (panel) panel.classList.add('active');
+    document.querySelectorAll('.sds-tabs button').forEach(function(b){
+      var on = b.getAttribute('data-go') === name;
+      b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true':'false');
+    });
+    try { window.scrollTo({top:0,behavior:'smooth'}); } catch(e){}
+  }
+  document.querySelectorAll('.sds-tabs button').forEach(function(b){
+    b.addEventListener('click', function(){ go(b.getAttribute('data-go')); });
+  });
+  window.kisanGo = go;
+
+  // Result-box renderer with a per-box 🔊 speak button (voice-first)
+  function render(elId, klass, html, speakText){
+    var box = $(elId); if (!box) return;
+    box.innerHTML = '<div class="sds-bubble ' + klass + '" style="margin:0">' + html +
+      '<div style="margin-top:10px"><button type="button" class="sds-btn ghost" style="min-height:42px;padding:8px 12px" onclick="kisanSpeak(this)" data-say="' + esc(speakText||'') + '">🔊 Sun</button></div></div>';
+  }
+  window.kisanSpeak = function(btn){ speak(btn.getAttribute('data-say') || ''); };
+
+  function prov(t){ return '<div class="prov">' + esc(t) + '</div>'; }
+  function notReady(){ return '<div class="sds-bubble warn">Engine load ho raha hai — ek pal mein dobara try karein.</div>'; }
+
+  // BO3 — Soil
+  window.kisanSoil = function(){
+    if (!E()) return render('r-soil','warn',notReady());
+    var r = E().soilForDistrict($('soil-dist').value, $('soil-state').value);
+    if (r.status !== 'ok'){
+      render('r-soil','warn','<b>Mitti pata nahi chali.</b><br>' + esc(r.message), r.message); return;
+    }
+    var crops = r.suitedCrops.map(function(c){ return '<span class="sds-chip green" style="margin:2px">' + esc(c) + '</span>'; }).join(' ');
+    var say = 'Aapki mitti ' + r.soil + ' hai. Isme acchi fasalein: ' + r.suitedCrops.join(', ');
+    render('r-soil','chitti','<b>🟤 Mitti: ' + esc(r.soil) + '</b><br>Paani pakadne ki kshamta: <b>' + esc(r.waterHolding) + '</b><br><div style="margin-top:8px">Uchit fasalein:</div>' + crops + prov(r.source), say);
+  };
+
+  // BO4 — Crop advisor
+  window.kisanCrop = function(){
+    if (!E()) return render('r-crop','warn',notReady());
+    var r = E().cropAdvice($('crop-dist').value, $('crop-state').value, monthIdx());
+    var seasonName = ({kharif:'Kharif (monsoon)',rabi:'Rabi (winter)',zaid:'Zaid (summer)'})[r.season] || r.season;
+    var html = '<b>📅 Season: ' + esc(seasonName) + '</b>';
+    if (r.soil && r.soil.soil) html += '<br>Mitti: ' + esc(r.soil.soil);
+    var say = 'Season ' + seasonName + '. ';
+    if (r.recommendations && r.recommendations.length){
+      html += '<ul style="margin:8px 0 0;padding-left:20px">';
+      r.recommendations.slice(0,6).forEach(function(rec){
+        html += '<li style="margin-bottom:6px"><b>' + esc(rec.crop) + '</b> — variety: ' + esc(rec.varieties.join(', ')) + '; bouni: ' + esc(rec.sow) + '; ~' + rec.harvestDays + ' din mein kataai.</li>';
+        say += rec.crop + ', ';
+      });
+      html += '</ul>';
+    }
+    if (r.note) html += '<div style="margin-top:8px">' + esc(r.note) + '</div>';
+    html += prov(r.source);
+    render('r-crop','chitti', html, 'Is mausam ki fasal salah. ' + say);
+  };
+
+  // BO5 — Irrigation
+  document.querySelectorAll('#tab-kheti .kisan-chip[data-cond]').forEach(function(ch){
+    ch.addEventListener('click', function(){ var on = ch.getAttribute('aria-pressed')==='true'; ch.setAttribute('aria-pressed', on?'false':'true'); });
+  });
+  window.kisanIrrigation = function(){
+    if (!E()) return render('r-irrig','warn',notReady());
+    var opts = { district: $('irr-dist').value, crop: $('irr-crop').value };
+    document.querySelectorAll('#tab-kheti .kisan-chip[data-cond]').forEach(function(ch){
+      if (ch.getAttribute('aria-pressed')==='true') opts[ch.getAttribute('data-cond')] = true;
+    });
+    var r = E().irrigationAdvice(opts);
+    var klass = r.klass==='ok' ? 'chitti' : 'warn';
+    var say = r.verdict + '. ' + r.reason;
+    render('r-irrig', klass, '<b style="font-size:18px">' + esc(r.verdict) + '</b><br>' + esc(r.reason) +
+      '<div style="margin-top:8px"><b>Kitna paani:</b> ' + esc(r.quantity) + '</div>' +
+      '<div style="margin-top:6px">💡 ' + esc(r.tip) + '</div>' + prov(r.source), say);
+  };
+
+  // BO6 — Organic
+  window.kisanOrgChip = function(name){ $('org-in').value = name; window.kisanOrganic(); };
+  window.kisanOrganic = function(){
+    if (!E()) return render('r-organic','warn',notReady());
+    var r = E().organicAlternative($('org-in').value);
+    if (r.status !== 'ok'){ render('r-organic','warn','<b>Vikalp list mein nahi.</b><br>' + esc(r.message), r.message); return; }
+    var list = r.organic.map(function(o){ return '<li style="margin-bottom:4px">🍃 ' + esc(o) + '</li>'; }).join('');
+    var say = r.chemical + ' ki jagah organic: ' + r.organic.join(', ') + '. ' + r.tip;
+    render('r-organic','chitti','<b>🍃 ' + esc(r.chemical) + '</b> (' + esc(r.replaces) + ') ki jagah:<ul style="margin:8px 0 0;padding-left:20px">' + list + '</ul>' +
+      '<div style="margin-top:8px">💡 ' + esc(r.tip) + '</div><div style="margin-top:6px;font-weight:700">' + esc(r.principle) + '</div>' + prov(r.source), say);
+  };
+
+  // BO2 — Mandi (honest coming soon)
+  window.kisanMandi = function(){
+    if (!E()) return render('r-mandi','warn',notReady());
+    var r = E().mandiPrice($('mandi-crop').value, $('mandi-dist').value, '');
+    render('r-mandi','warn','<b>📡 Agmarknet live bhav — COMING SOON</b><br>' + esc(r.message) + prov(r.source), r.message);
+  };
+
+  // BO1 — Weather seasonal (honest coming soon for live)
+  window.kisanWeather = function(){
+    if (!E()) return render('r-weather','warn',notReady());
+    var r = E().weatherAdvisory(monthIdx());
+    render('r-weather','warn','<b>🌦️ Seasonal salah (' + esc(r.season) + ')</b><br>' + esc(r.seasonalAdvisory) +
+      '<div style="margin-top:8px">' + esc(r.message) + '</div>' + prov(r.source), r.seasonalAdvisory + '. ' + r.message);
+  };
+
+  // BO8 — Livestock daily
+  window.kisanLivestock = function(animal){
+    if (!E()) return render('r-livestock','warn',notReady());
+    var r = E().livestockDaily(animal);
+    if (r.status !== 'ok'){ render('r-livestock','warn',esc(r.message)); return; }
+    var items = r.checklist.map(function(c){ return '<li style="margin-bottom:4px">✅ ' + esc(c) + '</li>'; }).join('');
+    var say = r.label + ' ki roz ki checklist. ' + r.checklist.join('. ');
+    render('r-livestock','chitti','<b>' + esc(r.label) + '</b><ul style="margin:8px 0 0;padding-left:20px">' + items + '</ul>' +
+      '<div style="margin-top:8px">💉 ' + esc(r.vaccination) + '</div>' +
+      '<div style="margin-top:6px;font-weight:700">🚑 ' + esc(r.reminder) + '</div>' + prov(r.source), say);
+  };
+
+  // BO9 — Symptom checker → 1962
+  window.kisanSymptom = function(){
+    if (!E()) return render('r-symptom','warn',notReady());
+    var r = E().symptomCheck($('symp-in').value);
+    var steps = r.doNow.map(function(s){ return '<li style="margin-bottom:4px">' + esc(s) + '</li>'; }).join('');
+    var say = r.headline + '. ' + r.doNow.join('. ');
+    render('r-symptom','safety','<b style="font-size:17px">' + esc(r.headline) + '</b>' +
+      '<div style="margin-top:8px"><a href="tel:1962" class="sds-btn danger block" style="text-decoration:none">📞 Abhi 1962 call karo</a></div>' +
+      '<div style="margin-top:10px"><b>Abhi yeh karo:</b><ul style="margin:6px 0 0;padding-left:20px">' + steps + '</ul></div>' +
+      '<div style="margin-top:8px;font-size:13px">' + esc(r.disclaimer) + '</div>' + prov(r.source), say);
+    speak(r.headline);
+  };
+
+  // Read page aloud (BO: voice-first / blind users)
+  window.kisanReadPage = function(){
+    var t = 'Chitti Kisan. Aapka kheti, pashu aur bagicha saathi. Kaunsi fasal lagaayein, kab paani dein, urea ki jagah organic vikalp, pashu ki roz dekhbhaal, aur pashu beemar ho to Pashu Helpline 1962. Mandi bhav aur mausam bhi. Sab awaaz se, aapki bhasha mein, muft.';
+    speak(t);
+  };
+})();
+</script>
+</body>
+</html>
