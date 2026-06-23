@@ -32,6 +32,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.pool import NullPool
 
 from config import settings
+from lib.devmode import guard_database_url
 
 log = logging.getLogger("database")
 
@@ -128,7 +129,7 @@ def make_engine(raw: str) -> Engine:
         return _sqlite_fallback()
 
 
-engine: Engine = make_engine(settings.DATABASE_URL)
+engine: Engine = make_engine(guard_database_url(settings.DATABASE_URL))
 db_url = str(engine.url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

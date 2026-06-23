@@ -38,6 +38,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.pool import NullPool
 
 from config import settings
+from lib.devmode import guard_database_url
 
 log = logging.getLogger("chitti-news-ai.db")
 
@@ -90,7 +91,7 @@ def _build_engine(raw: str) -> Engine:
     return create_engine(url, connect_args=connect_args, pool_pre_ping=True, future=True)
 
 
-engine: Engine = _build_engine(settings.database_url)
+engine: Engine = _build_engine(guard_database_url(settings.database_url))
 db_url = str(engine.url)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 Base = declarative_base()
