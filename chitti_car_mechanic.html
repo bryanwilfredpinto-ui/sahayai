@@ -84,8 +84,10 @@
   @media (prefers-contrast: more){.card,.res-box{border-width:2.5px}.tab[aria-selected="true"]{outline:2px solid var(--navy)}}
   @media (forced-colors: active){.btn.primary{border:2px solid}.tab[aria-selected="true"]{border:3px solid}}
 </style>
-<!-- LANGUAGE: Vaani-canonical. chitti_lang.js owns #lang-select (26 languages, auto-translate whole UI). -->
-<script src="chitti_lang.js" defer></script>
+<!-- LANGUAGE: Vaani-canonical. chitti_lang.js owns #lang-select (26 languages, auto-translate whole UI).
+     Loaded EARLY (no defer) so its delegated change-listener is active before any interaction —
+     wiring still waits for DOMContentLoaded internally, so this is safe. (cold-load fix 2026-06-16) -->
+<script src="chitti_lang.js"></script>
 <!-- A11Y SUBSTRATE: ISL, per-response feedback widget, disability profile, feature discovery, read-page. -->
 <script src="chitti_a11y.js" defer></script>
 <script src="feedback-widget.js" data-page="chitti_car_mechanic" defer></script>

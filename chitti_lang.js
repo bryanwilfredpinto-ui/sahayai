@@ -285,11 +285,16 @@
       'select[aria-label="Language"], select[aria-label="Choose language"], select[aria-label="Change language"]'
     );
     if (!sel) return;  // no existing dropdown — page is responsible per Bryan's contract
+    // COLD-LOAD FIX: a value the user may have picked BEFORE we finished wiring (cold-load race).
+    // Capture it before populateSelect() clears options, and ADOPT it instead of resetting to en.
+    var preSel = sel.value;
     populateSelect(sel);
-    sel.value = currentLang;
+    var want = currentLang;
+    if (preSel && preSel !== currentLang && LANGS.some(function (l) { return l.code === preSel; })) want = preSel;
+    sel.value = want;
     sel.onchange = function () { translateAll(this.value); };
-    if (currentLang && currentLang !== 'en') {
-      translateAll(currentLang);
+    if (want && want !== 'en') {
+      translateAll(want);
     } else {
       snapshotAll();
     }
