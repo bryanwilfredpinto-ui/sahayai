@@ -57,6 +57,8 @@ header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#
 .lang-toggle-bharat select:focus{background:rgba(255,255,255,.25)}
 
 /* Header More dropdown */
+.hdr-back{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;text-decoration:none;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:700;min-height:48px;white-space:nowrap}
+.hdr-back:hover,.hdr-back:focus-visible{background:rgba(255,255,255,.28);outline:2px solid #fff;outline-offset:2px}
 .hdr-more{position:relative}
 .hdr-more summary{list-style:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;min-height:40px;display:inline-flex;align-items:center}
 .hdr-more summary::-webkit-details-marker{display:none}
@@ -268,6 +270,8 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 
 <header role="banner">
   <div class="brand-row">
+    <!-- BO1 — ← Vaani back button in HEADER (Vaani is the sole user interface). Moved out of the ⋯ menu. -->
+    <a href="chitti_vaani.html" class="hdr-back" aria-label="Back to Chitti Vaani — your voice assistant">← Vaani</a>
     <div class="brand-id">
       <div class="bharat-logo" aria-hidden="true">C</div>
       <div style="min-width:0">
@@ -311,7 +315,6 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
       <summary aria-label="More options">⋯ More</summary>
       <div class="hdr-more-menu" role="menu">
         <a href="chitti_news.html" role="menuitem">📰 Chitti News</a>
-        <a href="chitti_vaani.html" role="menuitem">🎙️ Chitti Vaani</a>
         <a href="chitti_medupi.html" role="menuitem">💊 Chitti MedUPI</a>
         <hr style="border:none;border-top:1px solid var(--border);margin:4px 0">
         <button type="button" onclick="speakPage()" role="menuitem">🔊 Read page aloud</button>
