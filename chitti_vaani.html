@@ -9295,5 +9295,360 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 })();
 </script>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     UNIVERSAL ONBOARDING — 5-step, voice-first, first-time users only.
+     (STEP 3, 2026-06-24). Self-contained: own overlay + IIFE, appended last so
+     it takes over the first run and suppresses the legacy lang/consent/magic
+     gates. Returning users (onboarding_complete) never see it; already-onboarded
+     legacy users (lang + consent set) are migrated silently. Persists to
+     user_facts (Turso via chitti-vaani-api, best-effort) + localStorage (the
+     authoritative gate). DPDP toggles ship ALL OFF — non-negotiable.
+     ════════════════════════════════════════════════════════════════════════ -->
+<style id="chitti-onb5-styles">
+  #chitti-onb5{position:fixed;inset:0;z-index:2147483000;background:#F7F7F4;color:#0E2344;
+    font-family:Inter,system-ui,sans-serif;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #chitti-onb5.show{display:block}
+  #chitti-onb5 .o5-stripe{height:6px;background:linear-gradient(90deg,#FF9933 33%,#fff 33% 66%,#138808 66%)}
+  #chitti-onb5 .o5-wrap{max-width:520px;margin:0 auto;padding:14px 16px 40px;min-height:100%;box-sizing:border-box}
+  #chitti-onb5 .o5-dots{display:flex;gap:6px;justify-content:center;margin:10px 0 4px}
+  #chitti-onb5 .o5-dot{width:10px;height:10px;border-radius:50%;background:#d7d9e0}
+  #chitti-onb5 .o5-dot.on{background:#FF9933}
+  #chitti-onb5 .o5-step{font-size:13px;font-weight:700;color:#5a5a5a;text-align:center}
+  #chitti-onb5 h2{font-size:21px;line-height:1.3;margin:14px 0 4px;color:#0E2344}
+  #chitti-onb5 .o5-sub{font-size:15px;color:#444;margin:0 0 14px}
+  #chitti-onb5 .o5-hear{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 14px;
+    background:rgba(14,35,68,.07);border:1px solid #d4af37;border-radius:10px;color:#0E2344;font-weight:700;
+    font-size:14px;cursor:pointer;margin-bottom:10px}
+  #chitti-onb5 .o5-grid{display:grid;gap:10px}
+  #chitti-onb5 .o5-grid.lang{grid-template-columns:1fr 1fr}
+  #chitti-onb5 .o5-grid.occ{grid-template-columns:1fr 1fr}
+  #chitti-onb5 .o5-chip{display:flex;align-items:center;gap:8px;min-height:56px;padding:10px 12px;background:#fff;
+    border:2px solid #e2e4ea;border-radius:14px;cursor:pointer;font-size:17px;font-weight:700;color:#0E2344;
+    text-align:left;width:100%;font-family:inherit}
+  #chitti-onb5 .o5-chip:focus-visible{outline:3px solid #1d4ed8;outline-offset:2px}
+  #chitti-onb5 .o5-chip .o5-em{font-size:24px}
+  #chitti-onb5 .o5-chip .o5-en{display:block;font-size:12px;font-weight:600;color:#5a5a5a}
+  #chitti-onb5 .o5-spk{margin-left:auto;min-width:44px;min-height:44px;border:none;background:rgba(255,153,51,.14);
+    border-radius:10px;font-size:18px;cursor:pointer}
+  #chitti-onb5 input[type=text],#chitti-onb5 input[type=tel]{width:100%;min-height:50px;font-size:18px;padding:10px 12px;
+    border:2px solid #c9ccd6;border-radius:12px;box-sizing:border-box;font-family:inherit}
+  #chitti-onb5 .o5-toggle{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #e2e4ea;
+    border-radius:14px;padding:12px;margin-bottom:10px}
+  #chitti-onb5 .o5-toggle .o5-tlabel{flex:1;font-size:16px;font-weight:700}
+  #chitti-onb5 .o5-toggle .o5-texpl{display:block;font-size:12.5px;font-weight:500;color:#5a5a5a}
+  #chitti-onb5 .o5-sw{position:relative;width:56px;height:32px;flex:none}
+  #chitti-onb5 .o5-sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+  #chitti-onb5 .o5-sw .o5-track{position:absolute;inset:0;background:#c4c7d0;border-radius:999px;transition:.15s}
+  #chitti-onb5 .o5-sw .o5-knob{position:absolute;top:3px;left:3px;width:26px;height:26px;background:#fff;
+    border-radius:50%;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  #chitti-onb5 .o5-sw input:checked ~ .o5-track{background:#138808}
+  #chitti-onb5 .o5-sw input:checked ~ .o5-knob{left:27px}
+  #chitti-onb5 .o5-sw input:focus-visible ~ .o5-track{outline:3px solid #1d4ed8;outline-offset:2px}
+  #chitti-onb5 .o5-nav{display:flex;gap:10px;margin-top:18px}
+  #chitti-onb5 .o5-btn{flex:1;min-height:52px;font-size:17px;font-weight:800;border-radius:14px;cursor:pointer;
+    font-family:inherit;border:2px solid #0E2344;background:#fff;color:#0E2344}
+  #chitti-onb5 .o5-btn.primary{background:#FF9933;border-color:transparent;color:#0E2344}
+  #chitti-onb5 .o5-btn:focus-visible{outline:3px solid #1d4ed8;outline-offset:2px}
+  #chitti-onb5 .o5-skip{display:block;margin:14px auto 0;background:none;border:none;color:#5a5a5a;
+    font-size:14px;font-weight:700;text-decoration:underline;cursor:pointer;min-height:44px}
+  #chitti-onb5 .o5-priv{font-size:12px;color:#5a5a5a;text-align:center;margin-top:18px}
+  #chitti-onb5 .o5-priv a{color:#0E2344}
+  @media (prefers-reduced-motion: reduce){#chitti-onb5 .o5-sw *{transition:none}}
+</style>
+<div id="chitti-onb5" role="dialog" aria-modal="true" aria-label="Chitti setup">
+  <div class="o5-stripe" aria-hidden="true"></div>
+  <div class="o5-wrap">
+    <div class="o5-dots" id="o5-dots" aria-hidden="true"></div>
+    <div class="o5-step" id="o5-stepnum"></div>
+    <button type="button" class="o5-hear" id="o5-hear">🔊 <span>Sun-ne ke liye dabayein · Tap to hear</span></button>
+    <h2 id="o5-title"></h2>
+    <p class="o5-sub" id="o5-sub"></p>
+    <div id="o5-body"></div>
+    <div class="o5-nav" id="o5-nav"></div>
+    <button type="button" class="o5-skip" id="o5-skip"></button>
+    <p class="o5-priv">🔒 Your data stays on your phone. <a href="privacy.html">Privacy &amp; your rights →</a></p>
+  </div>
+</div>
+<script id="chitti-onb5-js">
+(function(){
+  "use strict";
+  try {
+    var ONB5_KEY  = 'chitti_onboarding_complete';
+    var UUID_KEY  = 'chitti_device_uuid';
+    var FACTS_KEY = 'chitti_user_facts';
+    var LANG_KEY  = 'chitti_vaani_lang';
+    var CONSENT_KEY = 'chitti_vaani_consent_given';
+    var ONB_KEY   = 'chitti_vaani_onb_done';
+    var MAGIC_KEY = 'chitti_vaani_magic_done';
+    var apiBase   = (typeof API_BASE !== 'undefined' && API_BASE) ? API_BASE : '';
+
+    function ls(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+    function set(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+    function deviceUuid(){
+      var u = ls(UUID_KEY);
+      if (!u){
+        try { u = (crypto && crypto.randomUUID) ? crypto.randomUUID() : null; } catch(e){}
+        if (!u) u = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
+        set(UUID_KEY, u);
+      }
+      return u;
+    }
+
+    // 26 languages — native + English (English default-highlighted). Mirrors chitti_lang.js.
+    var LANGS = [
+      ['en','English','English'],['hi','हिन्दी','Hindi'],['bn','বাংলা','Bangla'],['te','తెలుగు','Telugu'],
+      ['ta','தமிழ்','Tamil'],['mr','मराठी','Marathi'],['gu','ગુજરાતી','Gujarati'],['kn','ಕನ್ನಡ','Kannada'],
+      ['ml','മലയാളം','Malayalam'],['pa','ਪੰਜਾਬੀ','Punjabi'],['or','ଓଡ଼ିଆ','Odia'],['as','অসমীয়া','Assamese'],
+      ['ur','اردو','Urdu'],['sa','संस्कृतम्','Sanskrit'],['mai','मैथिली','Maithili'],['kok','कोंकणी','Konkani'],
+      ['doi','डोगरी','Dogri'],['ks','کٲشُر','Kashmiri'],['ne','नेपाली','Nepali'],['sd','سنڌي','Sindhi'],
+      ['mni','মৈতৈলোন্','Manipuri'],['sat','ᱥᱟᱱᱛᱟᱲᱤ','Santali'],['bho','भोजपुरी','Bhojpuri'],
+      ['raj','राजस्थानी','Rajasthani'],['kru','कुड़ुख़','Kurukh'],['hoc','हो','Ho']
+    ];
+    // 8 occupations — icon-first, no reading needed.
+    var OCC = [
+      ['kisaan','🌾','Kisaan','Farmer'],['naukri','👨‍💼','Naukri','Job / Service'],
+      ['dukaan','🏪','Dukaan','Shop / Business'],['ghar','🏠','Ghar','Homemaker'],
+      ['padhai','📚','Padhai','Student'],['budhapa','👴','Budhapa','Senior'],
+      ['driver','🚗','Driver','Driver'],['other','❓','Kuch aur','Something else']
+    ];
+    // 5 DPDP consent domains — ALL OFF by default (non-negotiable).
+    var DOMAINS = [
+      ['health','Health data','Medicines, prescriptions, health records'],
+      ['financial','Financial data','Income, GST, money matters'],
+      ['legal','Legal data','Notices, contracts, cases'],
+      ['vehicle','Vehicle data','Your bike or car details'],
+      ['cross_chitti','Cross-Chitti sharing','Let Chittis share to help you better']
+    ];
+
+    var state = { lang: ls(LANG_KEY) || 'en', occupation:'', pincode:'', coarse:null,
+      consents:{health:false,financial:false,legal:false,vehicle:false,cross_chitti:false},
+      profile:{family_health:'',vehicle:'',gst:''} };
+    var step = 1;
+
+    function speak(txt){
+      try { if (typeof speakText === 'function' && txt) speakText(txt, state.lang); } catch(e){}
+    }
+    function translate(){
+      try { if (window.Chitti && Chitti.a11y && Chitti.a11y.translate) Chitti.a11y.translate(state.lang); } catch(e){}
+    }
+    function el(id){ return document.getElementById(id); }
+
+    function renderDots(){
+      var d = el('o5-dots'); if (!d) return; var h='';
+      for (var i=1;i<=5;i++){ h += '<span class="o5-dot'+(i<=step?' on':'')+'"></span>'; }
+      d.innerHTML = h;
+      el('o5-stepnum').textContent = 'Step ' + step + ' of 5';
+    }
+
+    function show(){
+      var o = el('chitti-onb5'); if (o) o.classList.add('show');
+      renderStep();
+    }
+    function finish(){
+      // Persist facts (authoritative local gate + best-effort backend).
+      var uid = deviceUuid();
+      var facts = { lang: state.lang, occupation: state.occupation, pincode: state.pincode,
+        coarse: state.coarse, profile: state.profile, ts: new Date().toISOString() };
+      set(FACTS_KEY, JSON.stringify(facts));
+      set(ONB5_KEY, '1');
+      // Satisfy the legacy gates so nothing else pops for this user.
+      set(LANG_KEY, state.lang); set(CONSENT_KEY, '1'); set(ONB_KEY, '1'); set(MAGIC_KEY, '1');
+      // Best-effort server persistence — never blocks the UI.
+      if (apiBase){
+        try {
+          fetch(apiBase + '/api/vaani/onboarding', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ uid: uid, facts: facts, consents: state.consents }),
+            keepalive: true
+          }).catch(function(){});
+        } catch(e){}
+      }
+      var o = el('chitti-onb5'); if (o) o.classList.remove('show');
+      translate();
+      try { speak('Setup complete. Chitti is ready.'); } catch(e){}
+    }
+
+    function setNav(buttons){ // buttons: [{label, primary, onClick}]
+      var nav = el('o5-nav'); nav.innerHTML='';
+      buttons.forEach(function(b){
+        var btn = document.createElement('button');
+        btn.type='button'; btn.className='o5-btn'+(b.primary?' primary':'');
+        btn.textContent=b.label; btn.onclick=b.onClick;
+        nav.appendChild(btn);
+      });
+    }
+    function setSkip(label, fn){
+      var s = el('o5-skip');
+      if (!label){ s.style.display='none'; return; }
+      s.style.display=''; s.textContent=label; s.onclick=fn;
+    }
+
+    function renderStep(){
+      renderDots();
+      var title = el('o5-title'), sub = el('o5-sub'), body = el('o5-body');
+      el('o5-hear').onclick = function(){ speak(title.textContent + '. ' + sub.textContent); };
+      body.innerHTML='';
+
+      if (step === 1){
+        title.textContent = 'Choose your language';
+        sub.textContent = 'Tap your language. Tap 🔊 to hear it.';
+        var grid = document.createElement('div'); grid.className='o5-grid lang';
+        LANGS.forEach(function(L){
+          var chip = document.createElement('button');
+          chip.type='button'; chip.className='o5-chip'; chip.setAttribute('aria-label',L[2]);
+          chip.innerHTML = '<span>'+L[1]+'<span class="o5-en">'+L[2]+'</span></span>'+
+            '<span class="o5-spk" role="button" aria-label="Hear '+L[2]+'">🔊</span>';
+          chip.querySelector('.o5-spk').onclick = function(ev){ ev.stopPropagation();
+            try { if (typeof speakText==='function') speakText(L[1], L[0]); } catch(e){} };
+          chip.onclick = function(){
+            state.lang = L[0]; set(LANG_KEY, L[0]);
+            try { if (typeof changeLanguage==='function') changeLanguage(L[0]); } catch(e){}
+            try { window.dispatchEvent(new CustomEvent('chitti:langchange',{detail:{lang:L[0]}})); } catch(e){}
+            translate(); step=2; renderStep();
+          };
+          grid.appendChild(chip);
+        });
+        body.appendChild(grid);
+        setNav([]); setSkip('', null);
+        if (state.lang==='en') {/* default highlighted via CSS not needed */}
+      }
+
+      else if (step === 2){
+        title.textContent = 'What do you do?';
+        sub.textContent = 'Tap the picture that fits you best.';
+        var g = document.createElement('div'); g.className='o5-grid occ';
+        OCC.forEach(function(O){
+          var c = document.createElement('button');
+          c.type='button'; c.className='o5-chip'; c.setAttribute('aria-label',O[3]);
+          c.innerHTML = '<span class="o5-em" aria-hidden="true">'+O[1]+'</span>'+
+            '<span>'+O[2]+'<span class="o5-en">'+O[3]+'</span></span>';
+          c.onclick = function(){ state.occupation=O[0]; step=3; renderStep(); };
+          g.appendChild(c);
+        });
+        body.appendChild(g);
+        setNav([{label:'← Back',onClick:function(){ step=1; renderStep(); }}]);
+        setSkip('Skip', function(){ step=3; renderStep(); });
+      }
+
+      else if (step === 3){
+        title.textContent = 'Where are you?';
+        sub.textContent = 'This helps Chitti find local help. We store only your district — never your exact location.';
+        var loc = document.createElement('div');
+        loc.innerHTML = '<button type="button" class="o5-btn" id="o5-gps" style="margin-bottom:12px">📍 Use my location</button>'+
+          '<label for="o5-pin" style="font-weight:700;font-size:15px;display:block;margin-bottom:6px">Pincode (6 digits)</label>'+
+          '<input type="tel" id="o5-pin" inputmode="numeric" maxlength="6" placeholder="e.g. 110001" autocomplete="postal-code">'+
+          '<div id="o5-loc-note" style="font-size:13px;color:#138808;margin-top:8px"></div>';
+        body.appendChild(loc);
+        el('o5-pin').value = state.pincode || '';
+        el('o5-gps').onclick = function(){
+          var note = el('o5-loc-note'); note.textContent='Locating…';
+          if (!navigator.geolocation){ note.textContent='Location not available — type your pincode.'; return; }
+          navigator.geolocation.getCurrentPosition(function(p){
+            // Round to ~district level (1 decimal ≈ 11 km). NEVER store precise GPS.
+            state.coarse = { lat: Math.round(p.coords.latitude*10)/10, lng: Math.round(p.coords.longitude*10)/10 };
+            note.textContent='Got your area (district-level only). Please confirm your pincode.';
+          }, function(){ note.textContent='Could not get location — type your pincode instead.'; },
+          { enableHighAccuracy:false, timeout:8000, maximumAge:600000 });
+        };
+        setNav([
+          {label:'← Back',onClick:function(){ step=2; renderStep(); }},
+          {label:'Next →',primary:true,onClick:function(){
+            var v=(el('o5-pin').value||'').replace(/\D/g,'').slice(0,6); state.pincode=v; step=4; renderStep(); }}
+        ]);
+        setSkip('Skip', function(){ step=4; renderStep(); });
+      }
+
+      else if (step === 4){
+        title.textContent = 'What can Chitti use?';
+        sub.textContent = 'All OFF by default. Turn ON only what you want. You can change this anytime.';
+        var box = document.createElement('div');
+        DOMAINS.forEach(function(D){
+          var row = document.createElement('div'); row.className='o5-toggle';
+          row.innerHTML =
+            '<span class="o5-tlabel">'+D[1]+'<span class="o5-texpl">'+D[2]+'</span></span>'+
+            '<button type="button" class="o5-spk" aria-label="Hear about '+D[1]+'">🔊</button>'+
+            '<label class="o5-sw"><input type="checkbox" data-dom="'+D[0]+'" aria-label="'+D[1]+'">'+
+            '<span class="o5-track" aria-hidden="true"></span><span class="o5-knob" aria-hidden="true"></span></label>';
+          var cb = row.querySelector('input');
+          cb.checked = false; // NON-NEGOTIABLE: OFF by default
+          cb.onchange = function(){ state.consents[D[0]] = cb.checked; };
+          row.querySelector('.o5-spk').onclick = function(){ speak(D[1]+'. '+D[2]); };
+          box.appendChild(row);
+        });
+        body.appendChild(box);
+        setNav([
+          {label:'← Back',onClick:function(){ step=3; renderStep(); }},
+          {label:'Next →',primary:true,onClick:function(){ step=5; renderStep(); }}
+        ]);
+        setSkip('Keep all OFF & continue', function(){ step=5; renderStep(); });
+      }
+
+      else if (step === 5){
+        title.textContent = 'A few quick things (optional)';
+        sub.textContent = 'All optional — skip anything you like.';
+        var p = document.createElement('div');
+        p.innerHTML =
+          '<label style="font-weight:700;font-size:15px;display:block;margin:4px 0 6px">Family health note (optional)</label>'+
+          '<input type="text" id="o5-fh" placeholder="e.g. mother diabetic" autocomplete="off">'+
+          '<div style="font-weight:700;font-size:15px;margin:14px 0 6px">Vehicle you own</div>'+
+          '<div class="o5-grid" style="grid-template-columns:1fr 1fr 1fr">'+
+            '<button type="button" class="o5-chip o5-veh" data-v="none" style="justify-content:center">None</button>'+
+            '<button type="button" class="o5-chip o5-veh" data-v="2w" style="justify-content:center">🏍️ 2W</button>'+
+            '<button type="button" class="o5-chip o5-veh" data-v="4w" style="justify-content:center">🚗 4W</button>'+
+          '</div>'+
+          '<div style="font-weight:700;font-size:15px;margin:14px 0 6px">Do you have GST?</div>'+
+          '<div class="o5-grid" style="grid-template-columns:1fr 1fr">'+
+            '<button type="button" class="o5-chip o5-gst" data-g="yes" style="justify-content:center">Yes</button>'+
+            '<button type="button" class="o5-chip o5-gst" data-g="no" style="justify-content:center">No</button>'+
+          '</div>';
+        body.appendChild(p);
+        el('o5-fh').value = state.profile.family_health || '';
+        function mark(cls,attr,key){
+          var btns = body.querySelectorAll('.'+cls);
+          btns.forEach(function(b){
+            b.style.borderColor = (state.profile[key]===b.getAttribute(attr)) ? '#FF9933' : '#e2e4ea';
+            b.onclick = function(){ state.profile[key]=b.getAttribute(attr); mark(cls,attr,key); };
+          });
+        }
+        mark('o5-veh','data-v','vehicle'); mark('o5-gst','data-g','gst');
+        setNav([
+          {label:'← Back',onClick:function(){ step=4; renderStep(); }},
+          {label:'Finish ✓',primary:true,onClick:function(){
+            state.profile.family_health = (el('o5-fh').value||'').trim(); finish(); }}
+        ]);
+        setSkip('Skip & finish', function(){ finish(); });
+      }
+
+      // Auto-read the step prompt aloud (blind / illiterate / grandmother).
+      setTimeout(function(){ speak(title.textContent + '. ' + sub.textContent); }, 350);
+    }
+
+    function suppressLegacyGates(){
+      ['vai-lang-gate','consent-overlay','vai-magic'].forEach(function(id){
+        var e = el(id); if (e) e.classList.add('hidden');
+      });
+    }
+
+    function boot(){
+      // Returning user → never show again.
+      if (ls(ONB5_KEY) === '1') return;
+      // Test/inspection bypass.
+      try { if (/[?&](notabs|cto)=1\b/.test(location.search)) { set(ONB5_KEY,'1'); return; } } catch(e){}
+      // Already-onboarded legacy user (chose a language AND gave consent) → migrate silently.
+      if (ls(LANG_KEY) && ls(CONSENT_KEY) === '1'){ set(ONB5_KEY,'1'); return; }
+      // Fresh user → take over the first run.
+      deviceUuid();
+      suppressLegacyGates();
+      // Keep legacy gates suppressed for a few ticks (they self-show on their init).
+      var n=0, iv=setInterval(function(){ suppressLegacyGates(); if (++n>8) clearInterval(iv); }, 120);
+      show();
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  } catch(e){ /* never block the page */ }
+})();
+</script>
 </body>
 </html>
