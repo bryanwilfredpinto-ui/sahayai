@@ -8705,31 +8705,68 @@ window.addEventListener('DOMContentLoaded', () => {
 (function(){
   'use strict';
   // ── Specialist routing map (every other Chitti is a tool Vaani opens in-place) ──
+  // Specialist routing table — 16 Chittis (STEP 4, 2026-06-24). Vaani opens each
+  // Chitti's page in the bottom panel (← Vaani back), the page calls its own
+  // backend + already carries Golden Rule / a11y / per-response widget.
   var SPECIALIST = {
     medupi:{url:'chitti_medupi.html',label:'💊 MedUPI'}, health_file:{url:'chitti_health_file.html',label:'🩺 Health File'},
     legal:{url:'chitti_legal.html',label:'⚖️ Legal'}, ca:{url:'chitti_ca.html',label:'🧾 CA'},
     government:{url:'chitti_government.html',label:'🏛️ Government'}, scanner:{url:'chitti_scanner.html',label:'📷 Scanner'},
     upi_guard:{url:'chitti_upi.html',label:'🛡️ UPI Guard'}, fashion:{url:'chitti_fashion.html',label:'👗 Fashion'},
     news:{url:'chitti_news.html',label:'📰 News'}, technical:{url:'chitti_technical_ai.html',label:'📈 Technical'},
+    fundamentals:{url:'chitti_fundamentals.html',label:'📊 Shares / Fundamentals'},
     psychology:{url:'chitti_psychology.html',label:'🧠 Psychology'},
-    '2wheeler':{url:'chitti_2wheeler.html',label:'🏍️ 2-Wheeler'}, '4wheeler':{url:'chitti_4wheeler.html',label:'🚗 4-Wheeler'}
+    logo_video:{url:'chitti_logo_video.html',label:'🎨 Logo & Video'},
+    news_ai:{url:'chitti_news_ai.html',label:'🎓 Learn / Career'},
+    kisan:{url:'chitti_kisan.html',label:'🌾 Kisan'},
+    jobs:{url:'chitti_jobs.html',label:'💼 Jobs'},
+    // 2026-06-24: legacy chitti_2wheeler.html was deleted (commit 1e814dc) and
+    // superseded by the chitti-mechanic-2w rebuild. Repoint so the bike route
+    // no longer opens a 404 iframe.
+    '2wheeler':{url:'chitti_mechanic_2w.html',label:'🏍️ 2-Wheeler'}, '4wheeler':{url:'chitti_4wheeler.html',label:'🚗 4-Wheeler'}
   };
   // ── Deterministic keyword classifier (rules are the product; no browser API key) ──
+  // 16-Chitti deterministic keyword classifier (STEP 4, 2026-06-24). Rules are the
+  // product — no browser API key. Multilingual triggers (EN · Hindi · Hinglish);
+  // the a11y substrate auto-translates the user's text to a matchable form for the
+  // other 23 languages. FIRST match wins, so order disambiguates overlaps
+  // (e.g. "job seekhna" = learning → news_ai before jobs; farming terms → kisan
+  //  before government keeps "PM Kisan" scheme queries on government).
   var INTENT = [
     ['medupi',     /\b(medicine|dawa|दवा|tablet|capsule|जन औषधि|jan aushadhi|generic|salt|composition|strip)\b/i],
     ['health_file',/\b(report|blood test|sugar|bp|x-?ray|scan report|prescription|रिपोर्ट|vitals|hba1c|cholesterol)\b/i],
-    ['legal',      /\b(legal|notice|kanoon|कानून|fir|court|rent agreement|cheque bounce|138|consumer|advocate|lawyer|bijli|बिजली|electricity|overcharge|over[- ]?charged|zyada (aaya|bill|charge|paisa|liya)|bill (bahut )?zyada|shikayat|शिकायत|complaint|refund nahi)\b/i],
+    ['legal',      /\b(legal|notice|kanoon|कानून|fir|court|rent agreement|cheque bounce|138|consumer|advocate|lawyer|vakeel|वकील|bijli|बिजली|electricity|overcharge|over[- ]?charged|zyada (aaya|bill|charge|paisa|liya)|bill (bahut )?zyada|shikayat|शिकायत|complaint|refund nahi)\b/i],
     ['ca',         /\b(tax|itr|gst|tds|income tax|कर|return file|80c|capital gain|invoice|salary slip|form 16)\b/i],
-    ['government', /\b(scheme|yojana|योजना|subsidy|ration|pension|aadhaar|pm[- ]?kisan|pmkisan|kisan|पीएम किसान|eligible|ayushman|certificate|sarkari|pmay|mudra|scholarship|cpgrams)\b/i],
-    ['upi_guard',  /\b(upi|qr|fraud|scam|otp|cheat| thug|ठग|paytm|phonepe|गलत payment|suspicious|lottery)\b/i],
+    ['government', /\b(scheme|yojana|योजना|subsidy|ration|pension|aadhaar|pm[- ]?kisan|pmkisan|पीएम किसान|eligible|ayushman|certificate|sarkari|pmay|mudra|scholarship|cpgrams)\b/i],
+    ['upi_guard',  /\b(upi|qr|fraud|scam|otp|cheat| thug|ठग|paytm|phonepe|गलत payment|suspicious|lottery|block ho ?ja|account block|click karo|link pe click)\b/i],
     ['scanner',    /\b(food label|barcode|expiry|ingredient|product scan|fssai|खाद्य|packaged)\b/i],
     ['fashion',    /\b(outfit|kapde|कपड़े|wear|dress|wedding|shaadi|शादी|interview|style|wardrobe|saree|kurta)\b/i],
     ['2wheeler',   /\b(bike|scooter|motorcycle|pulsar|activa|बाइक|two wheeler|2 wheeler|chain|clutch)\b/i],
     ['4wheeler',   /\b(car|gaadi|गाड़ी|four wheeler|4 wheeler|swift|fastag|puc|insurance renew)\b/i],
-    ['technical',  /\b(stock|share|nifty|sensex|market|rsi|शेयर|buy sell|chart|reliance|infy)\b/i],
+    ['kisan',      /\b(farmer|kisaan|kheti|खेती|kheth|खेत|fasal|फसल|crop|soil|mitti|मिट्टी|irrigat|paani d|sinchai|beej|बीज|khaad|खाद|fertiliz|pesticide|garden|bagicha|बगीचा|mandi (rate|bhav)|kheti[- ]?baari)\b/i],
+    ['fundamentals',/\b(stock|share|शेयर|nifty|sensex|market|rsi|buy sell|invest|निवेश|mutual fund|sip|fundamental|balance sheet|p\/e|valuation|reliance|infy)\b/i],
+    ['psychology', /\b(stress|tension|tanaav|तनाव|mental|depress|अवसाद|anxiety|anxious|udaas|उदास|akela|अकेला|mann nahi|lonely|घबरा|ghabra|psycholog)\b/i],
+    ['logo_video', /\b(logo|video|graphic|design|banner|poster|brand|thumbnail|reel|intro video)\b/i],
+    ['news_ai',    /\b(seekh|सीख|sikh|learn|course|कोर्स|certif|skill|upskill|career|agentic ai|ai tool|naya tool|model seekh|academy)\b/i],
+    ['jobs',       /\b(job|naukri|नौकरी|rozgar|रोजगार|resume|cv|apply|vacancy|hiring|job opening|naukri dhundh|job chahiye)\b/i],
     ['news',       /\b(news|khabar|खबर|headline|aaj kya hua|breaking|samachar)\b/i]
   ];
   function classifyIntent(t){ for(var i=0;i<INTENT.length;i++){ if(INTENT[i][1].test(t)) return INTENT[i][0]; } return null; }
+
+  // ── Routing observability — logs intent + Chitti + response time (STEP 4) ──
+  // Honest local log (console + localStorage ring buffer of 200). No fake backend
+  // call: a Turso routing-audit sink is a follow-up once chitti-vaani-api exposes
+  // /api/vaani/route-log. Read window.ChittiRouting.events in the console to audit.
+  var ChittiRouting = { events:[], log:function(intent, label, input){
+    var ev = { intent:intent, chitti:label, ts:Date.now(),
+      ms:(input && input._t0) ? (Date.now() - input._t0) : null,
+      lang:(typeof CURRENT_LANG!=='undefined' ? CURRENT_LANG : 'hi') };
+    this.events.push(ev);
+    try{ console.info('[Vaani route]', ev.intent, '→', ev.chitti, ev.ms!=null?(ev.ms+'ms'):''); }catch(e){}
+    try{ var k='chitti_vaani_routing_log'; var a=JSON.parse(localStorage.getItem(k)||'[]');
+      a.push(ev); if(a.length>200) a=a.slice(-200); localStorage.setItem(k,JSON.stringify(a)); }catch(e){}
+  }};
+  window.ChittiRouting = ChittiRouting;
 
   // ── helpers (define the ones the spec assumed) ──
   function speakAndShow(msg){ try{ if(typeof speakText==='function') speakText(msg,(typeof CURRENT_LANG!=='undefined'?CURRENT_LANG:'hi')); }catch(e){}
@@ -8740,8 +8777,16 @@ window.addEventListener('DOMContentLoaded', () => {
   function openSpecialist(name, input){
     var cfg = SPECIALIST[name]; if(!cfg){ return false; }
     closeSpecialist(true);
+    // Thread the user's saved profile (occupation · language · location) into the
+    // specialist so it can personalise without re-asking — e.g. Jobs scores against
+    // the user's occupation/pincode. Saved by the universal onboarding; never PII to
+    // a 3rd party, stays inside the same origin's iframe.
+    var facts=null; try{ facts=JSON.parse(localStorage.getItem('chitti_user_facts')||'null'); }catch(e){}
+    var lang=(typeof CURRENT_LANG!=='undefined' ? CURRENT_LANG : (facts && facts.lang) || 'hi');
     var payload={ from:'vaani', type:(input&&input.type)||'text',
-      content: (input&&typeof input.content==='string')?input.content.substring(0,1000):'' };
+      content: (input&&typeof input.content==='string')?input.content.substring(0,1000):'',
+      facts: facts, lang: lang };
+    try{ ChittiRouting.log(name, cfg.label, input); }catch(e){}
     var enc=''; try{ enc=btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); }catch(e){ enc=''; }
     var panel=document.createElement('div');
     panel.id='chittiSpecialistPanel'; panel.className='chitti-specialist-panel';
@@ -8808,6 +8853,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // ── Phase 1 — the triage entry called from sendToChitti() (text + voice) ──
   window.chittiTriageText = function(text){
     if(!text) return false;
+    var _t0 = Date.now();   // routing-start stamp → response-time in the routing log
     // 1) Emergency first — uses the EXISTING family-cascade flow, never auto-dials cops
     try{ var elow=(text||'').toLowerCase();
       var EKW=['ambulance','accident','bachao','बचाओ','fire','aag','आग',' 108',' 112','injured','heart attack','stroke','help me','madad','मदद'];
@@ -8820,7 +8866,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // 3) Specialist routing (deterministic). Vehicle asks bike/car.
     var intent=classifyIntent(text);
     if(intent==='2wheeler'||intent==='4wheeler'){ /* could be either if generic */ }
-    if(intent){ return openSpecialist(intent,{type:'text',content:text}); }
+    if(intent){ return openSpecialist(intent,{type:'text',content:text,_t0:_t0}); }
     // 4) no specialist (emotion may have been noted) → let Vaani answer directly
     return false;
   };
