@@ -2374,5 +2374,48 @@
   <script src="chitti_i18n.js"></script>
   <!-- chitti_lang.js?v=20260529r — populates the 26-lang dropdown + body-wide i18n. Added 2026-05-27 (gate G4 for chitti_logo_video). -->
   <script src="chitti_lang.js?v=20260529r"></script>
+
+  <!-- BO1 — Vaani handoff: ?from=vaani prefills the BRAND field from the conversation (SOP 04).
+       The ← Vaani back button itself is injected by the chitti_a11y.js substrate. -->
+  <script>
+  (function(){
+    function decodeInput(raw){
+      if(!raw) return null;
+      try{ var j = JSON.parse(decodeURIComponent(escape(atob(raw))));
+           if(j){ if(typeof j.content==='string') return {brand:j.content};
+                  if(j.brand) return {brand:j.brand, tagline:j.tagline};
+                  if(typeof j.input==='string') return {brand:j.input}; } }catch(e){}
+      try{ var s = decodeURIComponent(escape(atob(raw))); if(s) return {brand:s}; }catch(e2){}
+      try{ return {brand: decodeURIComponent(raw)}; }catch(e3){ return {brand: String(raw)}; }
+    }
+    function run(){
+      try{
+        var p = new URLSearchParams(location.search||'');
+        if(p.get('from')!=='vaani') return;
+        var data = decodeInput(p.get('input'));
+        var $brand = document.getElementById('brand');
+        if(!$brand) return;
+        if(data && data.brand){
+          $brand.value = String(data.brand).slice(0,80);
+          $brand.dispatchEvent(new Event('input',{bubbles:true}));
+          var $tag = document.getElementById('tagline');
+          if($tag && data.tagline){ $tag.value = String(data.tagline).slice(0,80); $tag.dispatchEvent(new Event('input',{bubbles:true})); }
+        }
+        if(!document.getElementById('vaani-prefill-note')){
+          var note = document.createElement('div');
+          note.id = 'vaani-prefill-note';
+          note.setAttribute('role','status');
+          note.style.cssText = 'background:#fff3e6;border:1px solid #E86A17;border-radius:10px;padding:8px 12px;margin:8px 0;font-size:13.5px;color:#7a3d09;font-weight:600';
+          note.textContent = '🎙️ Opened from Chitti Vaani — your business name is filled in. Tap “Make my logo” when ready.';
+          $brand.parentNode.insertBefore(note, $brand);
+        }
+        try{ $brand.focus(); }catch(e){}
+        try{ if(window.Chitti&&Chitti.a11y&&Chitti.a11y.speak) Chitti.a11y.speak('Opened from Vaani. Business name filled in: '+$brand.value); }catch(e){}
+      }catch(e){}
+    }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(run,120); });
+    else setTimeout(run,120);
+  })();
+  </script>
 </body>
 </html>

@@ -206,7 +206,7 @@ Chitti Logo & Video Creation is India's voice-first AI design studio. A kirana o
 
 | BO | What | Status | Hours |
 |---|---|---|---|
-| BO1 | Vaani panel + ← Vaani + prefill | ⭐ BUILD | 1h |
+| BO1 | Vaani panel + ← Vaani + prefill | ✅ DONE — `?from=vaani&input=<base64>` decodes the conversation → prefills `#brand` (+tagline) + "opened from Vaani" note; ← Vaani back via chitti_a11y.js substrate. Cert `tools/cert_logo_bo1.mjs` 7/7 GREEN (2026-06-24) | 1h |
 | BO2 | India aesthetic styles in prompts | ⭐ BUILD | 2h |
 | BO3 | Devanagari text-in-image support | ⭐ BUILD | 3h |
 | BO4 | WhatsApp DP / status video format | ⭐ BUILD | 2h |
