@@ -510,12 +510,12 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
   <section class="learn-panel" id="cert-section" data-chitti-response data-chitti-section="60-day certification coach" style="display:none">
     <h2 class="section-title">🎓 60-Day Certification Coach</h2>
     <p class="section-sub">Pick a profession (or type a certification). Chitti builds a fixed <strong>Day 1–60</strong> plan — 10 minutes a day, 6 phases, weekly reviews — and teaches each day in your language using your profession as the analogy. Free certs always shown; Chitti never sits the exam for you.</p>
-    <form id="cert-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return false">
+    <form id="cert-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return cnaiCertGo(event)">
       <label for="cert-input" class="sr-only">Profession or certification</label>
       <input id="cert-input" type="text" placeholder="e.g. teacher · farmer · SHRM-CP"
              aria-label="Type your profession or a certification name"
              style="flex:1;min-width:200px;min-height:48px;padding:0 14px;font-size:16px;border:2px solid #888;border-radius:10px" />
-      <button type="button" id="cert-go" aria-label="Build my 60-day plan"
+      <button type="button" id="cert-go" onclick="cnaiCertGo(event)" aria-label="Build my 60-day plan"
               style="min-width:48px;min-height:48px;padding:0 16px;font-size:16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700">Build 60-day plan →</button>
     </form>
     <div id="cert-content" aria-live="polite" aria-atomic="false"></div>
@@ -1680,6 +1680,119 @@ function speakPage() {
 })();
 </script>
 
+<!-- BO5 — 60-Day Certification Coach: UI handler. The deterministic Day 1–60
+     structure lives in cnai_cert_coach.js (window.CnaiCertCoach); this block wires
+     the form → engine → render (today's card + streak + milestones + 60-day grid)
+     and persists progress locally (cnai_cert_v1). Rules are the product — no LLM in
+     the critical path; the per-day lesson PROSE is taught by Chitti at runtime. -->
+<script>
+(function () {
+  'use strict';
+  var KEY = 'cnai_cert_v1';
+  function _load() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } }
+  function _save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+  function _esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function _speak(t) {
+    if (!t) return;
+    try { if (window.Chitti && Chitti.a11y && Chitti.a11y.speak) { Chitti.a11y.speak(t); return; } } catch (e) {}
+    try { var u = new SpeechSynthesisUtterance(t); u.rate = .96; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } catch (e) {}
+  }
+
+  function _render(plan, store) {
+    var host = document.getElementById('cert-content'); if (!host || !window.CnaiCertCoach) return;
+    var Eng = window.CnaiCertCoach;
+    var prog = Eng.progress(store.done);
+    var nextDay = prog.nextDay || 60;
+    var t = Eng.today(plan, nextDay);
+    var doneSet = {}; (store.done || []).forEach(function (d) { doneSet[d] = 1; });
+    var h = '';
+    h += '<div style="background:#f3faf4;border:2px solid #138808;border-radius:12px;padding:12px;margin-bottom:10px">' +
+      '<div style="font-weight:800;color:#0b5a25;font-size:15px">🎓 ' + _esc(plan.cert) + '</div>' +
+      '<div style="font-size:13px;color:#33663f;margin-top:2px">' + _esc(plan.note) + '</div></div>';
+    h += '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#0b5a25">' +
+      '<span>' + prog.done + ' / 60 days</span><span>🔥 ' + prog.streak + '-day streak · ' + prog.percent + '%</span></div>' +
+      '<div role="progressbar" aria-valuenow="' + prog.percent + '" aria-valuemin="0" aria-valuemax="100" aria-label="Course progress" ' +
+      'style="height:12px;background:#dde;border-radius:999px;overflow:hidden;margin-top:4px">' +
+      '<div style="height:100%;width:' + prog.percent + '%;background:#138808"></div></div></div>';
+    if (prog.complete) {
+      h += '<div style="background:#fff7e6;border:2px solid #E8A21A;border-radius:12px;padding:12px;font-weight:800;color:#7a5200">' +
+        '🏆 60 days complete! You are ready to sit ' + _esc(plan.cert) + '. Chitti never sits the exam for you — register at the official free source.</div>';
+    } else {
+      h += '<div data-chitti-response style="background:#fff;border:2px solid #138808;border-radius:12px;padding:14px;margin-bottom:10px">' +
+        '<div style="font-size:12px;font-weight:700;color:#138808;text-transform:uppercase">Day ' + t.day + ' of 60 · ' + _esc(t.phase) + (t.rest ? ' · review' : '') + '</div>' +
+        '<div style="font-size:17px;font-weight:800;color:#0E2344;margin:4px 0">' + _esc(t.title) + '</div>' +
+        '<div style="font-size:15px;color:#222;line-height:1.5">' + _esc(t.task) + '</div>' +
+        '<div style="font-size:13px;color:#555;margin-top:6px">⏱ ' + t.minutes + ' min' + (t.quiz ? ' · ends with a 2-question quiz' : '') + (t.milestone ? ' · 🏁 ' + _esc(t.milestone) : '') + '</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+        '<button type="button" onclick="cnaiCertToggle(' + t.day + ')" aria-label="Mark Day ' + t.day + ' done" ' +
+        'style="min-height:48px;padding:0 16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700">✓ Mark Day ' + t.day + ' done</button>' +
+        '<button type="button" onclick="cnaiCertSpeakToday()" aria-label="Read today aloud" ' +
+        'style="min-height:48px;min-width:48px;padding:0 14px;border-radius:10px;border:2px solid #138808;background:#fff;color:#138808;font-weight:700">🔊</button>' +
+        '</div></div>';
+    }
+    if (prog.milestonesHit.length) {
+      h += '<div style="font-size:13px;color:#0b5a25;margin-bottom:8px">🏁 ' + prog.milestonesHit.map(function (m) { return _esc(m.label); }).join(' · ') + '</div>';
+    }
+    h += '<details style="margin-top:6px"><summary style="cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700;color:#0E2344">📅 All 60 days</summary>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
+    for (var i = 1; i <= 60; i++) {
+      var on = !!doneSet[i];
+      h += '<button type="button" onclick="cnaiCertToggle(' + i + ')" aria-label="Day ' + i + (on ? ' done' : ' not done') + ', tap to toggle" ' +
+        'style="min-width:44px;min-height:44px;border-radius:8px;font-weight:700;cursor:pointer;border:2px solid ' + (on ? '#138808' : '#bbb') + ';' +
+        'background:' + (on ? '#138808' : '#fff') + ';color:' + (on ? '#fff' : '#555') + '">' + i + '</button>';
+    }
+    h += '</div></details>';
+    host.innerHTML = h;
+    host.setAttribute('data-cert-speak', (t && t.teach) ? t.teach : ('Day ' + nextDay + ' of your ' + plan.cert + ' plan.'));
+  }
+
+  // Build (or rebuild) the plan from the input / saved profession and render it.
+  window.cnaiCertGo = function (ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    var host = document.getElementById('cert-content');
+    if (!window.CnaiCertCoach) { if (host) host.innerHTML = '<div style="color:#b00">60-Day Coach engine could not load. Refresh and try again.</div>'; return false; }
+    var input = ((document.getElementById('cert-input') || {}).value || '').trim();
+    var role = ''; try { role = (window.cnaiDisplayRole && window.cnaiDisplayRole()) || ''; } catch (e) {}
+    // If the input looks like a certification name, treat it as the cert seed and
+    // use the saved profession as the analogy; else the input IS the profession.
+    var looksLikeCert = /cert|exam|shrm|aws|azure|pmp|gst|cfa|comptia|elements of ai|academy/i.test(input);
+    var profession = role || (looksLikeCert ? '' : input) || '';
+    var certSeed = looksLikeCert ? input : '';
+    if (!profession && !certSeed) { if (host) host.innerHTML = '<div style="color:#b00">Type a profession (e.g. teacher) or a certification name first.</div>'; return false; }
+    var plan; try { plan = window.CnaiCertCoach.build(certSeed, profession); } catch (e) { if (host) host.innerHTML = '<div style="color:#b00">Could not build the plan right now.</div>'; return false; }
+    var store = _load();
+    if (!store || store.cert !== plan.cert) { store = { cert: plan.cert, profession: plan.profession, done: [] }; _save(store); }
+    _render(plan, store);
+    _speak('Your 60-day plan for ' + plan.cert + ' is ready. Day 1 today — ten minutes.');
+    return false;
+  };
+
+  window.cnaiCertToggle = function (day) {
+    var store = _load(); if (!store || !window.CnaiCertCoach) return;
+    day = parseInt(day, 10); if (!(day >= 1 && day <= 60)) return;
+    var idx = (store.done || (store.done = [])).indexOf(day);
+    if (idx >= 0) store.done.splice(idx, 1); else store.done.push(day);
+    _save(store);
+    try { _render(window.CnaiCertCoach.build(store.cert, store.profession), store); } catch (e) {}
+  };
+
+  window.cnaiCertSpeakToday = function () {
+    var h = document.getElementById('cert-content'); var t = h && h.getAttribute('data-cert-speak'); if (t) _speak(t);
+  };
+
+  // Returning user — re-hydrate their plan + progress on load.
+  document.addEventListener('DOMContentLoaded', function () {
+    var store = _load();
+    if (store && store.cert && window.CnaiCertCoach) {
+      try {
+        _render(window.CnaiCertCoach.build(store.cert, store.profession), store);
+        var ci = document.getElementById('cert-input'); if (ci && !ci.value) ci.value = store.profession || store.cert;
+      } catch (e) {}
+    }
+  });
+})();
+</script>
+
 <!-- BO6 — Accessibility & Languages: title i18n (en+hi) + RTL, layered on the
      chitti_lang.js substrate (proper nouns stay English; substrate fills 24 langs). -->
 <script>
@@ -1694,6 +1807,7 @@ function speakPage() {
       'analogy-section': ['🧠 Teach Me — In My Own Words', 'Pick a concept and an analogy you love. Chitti explains it your way — and always tells you where the analogy breaks down.'],
       'career-section': ['💼 Your AI Career Coach', 'Tell Chitti your profession. Chitti finds the AI tools and FREE certificates for YOUR field. Your resume never leaves your phone.'],
       'swarm-section': ['🐝 Chitti Swarm — Learn Faster, Together', 'Give Chitti a big goal. Many helpers each learn one part, then combine into one roadmap.'],
+      'cert-section': ['🎓 60-Day Certification Coach', 'Pick a profession or type a certification. Chitti builds a fixed Day 1–60 plan — 10 minutes a day, 6 phases, weekly reviews — and teaches each day using your profession as the analogy. Free certs always shown; Chitti never sits the exam for you.'],
     },
     hi: {
       'roadmap-section': ['🗺️ कुछ भी सीखें — आपका रोडमैप', 'Chitti को बताएं आप क्या सीखना चाहते हैं। कोई भी कौशल, कोई भी पेशा। Chitti मुफ़्त YouTube वीडियो के साथ कदम-दर-कदम रास्ता बनाता है।'],
@@ -1701,6 +1815,7 @@ function speakPage() {
       'analogy-section': ['🧠 मुझे समझाएं — मेरी भाषा में', 'एक concept और अपनी पसंद की उपमा चुनें। Chitti आपके तरीके से समझाता है — और बताता है कि उपमा कहाँ टूटती है।'],
       'career-section': ['💼 आपका AI करियर कोच', 'Chitti को अपना पेशा बताएं। Chitti आपके क्षेत्र के लिए AI टूल और मुफ़्त सर्टिफिकेट ढूँढता है। आपका रिज़्यूमे फ़ोन से बाहर नहीं जाता।'],
       'swarm-section': ['🐝 Chitti स्वार्म — मिलकर तेज़ी से सीखें', 'Chitti को एक बड़ा लक्ष्य दें। कई सहायक एक-एक हिस्सा सीखते हैं, फिर एक रोडमैप में जोड़ते हैं।'],
+      'cert-section': ['🎓 60-दिन सर्टिफिकेशन कोच', 'एक पेशा चुनें या सर्टिफिकेशन का नाम लिखें। Chitti एक तय Day 1–60 योजना बनाता है — रोज़ 10 मिनट, 6 चरण, साप्ताहिक समीक्षा — और हर दिन आपके पेशे की उपमा से सिखाता है। मुफ़्त सर्टिफिकेट हमेशा दिखते हैं; Chitti आपकी परीक्षा कभी नहीं देता।'],
     },
   };
   function apply(code) {
