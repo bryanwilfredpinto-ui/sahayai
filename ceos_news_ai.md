@@ -171,7 +171,7 @@ User gives a big learning goal. Multiple AI agents each learn one part — cours
 | 12 | 26-language support | ✅ LIVE |
 | 13 | Four-user accessibility (COSDF v1.1) | ✅ LIVE |
 | 14 | Haq ka Paisa integration | ✅ LIVE |
-| 15 | ← Vaani button in HEADER (not menu) | ⭕ BUILD |
+| 15 | ← Vaani button in HEADER (not menu) | ✅ LIVE — cert `tools/cert_news_ai_bo1.mjs` 6/6 GREEN (2026-06-24) |
 | 16 | Career Path Mapper (profession → roadmap → certifications) | ⭕ BUILD |
 | 17 | Indian Analogy Engine (profession-specific examples) | ⭕ BUILD |
 | 18 | Course Digestion Engine (Chitti reads course → teaches user) | ⭕ BUILD |
@@ -264,7 +264,7 @@ TA/HR, Farmer, Doctor, Developer, Driver, Teacher, Accountant, Homemaker, Studen
 
 | BO | What | Priority | Hours |
 |---|---|---|---|
-| BO1 | ← Vaani button moved to HEADER (not menu) | 🔴 HIGH | 0.5h |
+| BO1 | ← Vaani button moved to HEADER (not menu) — ✅ DONE, cert 6/6 GREEN 2026-06-24 | 🔴 HIGH | 0.5h |
 | BO2 | Career Path Mapper — profession → specific cert roadmap per matrix | 🔴 HIGH | 3h |
 | BO3 | Indian Analogy Engine — detect profession → select analogy set → inject into every explanation | 🔴 HIGH | 4h |
 | BO4 | Course Digestion Engine — Chitti reads course URL/content → builds lesson plan | 🔴 HIGH | 6h |
