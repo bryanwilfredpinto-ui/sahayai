@@ -260,6 +260,84 @@
     return resp;
   }
 
+  // ── BO3 — Stress pattern (7-day mood trend) + SOP-05 gentle escalation ──
+  var TREND_DISCLAIMER = 'A mood trend is information, not a diagnosis. It does not measure any illness.';
+  var TREND_NOTE = {
+    improving: 'Your mood looks a little brighter than earlier this week. Small steps count.',
+    declining: 'Your mood looks lower than earlier this week. Be gentle with yourself.',
+    steady: 'Your mood looks fairly steady this week.'
+  };
+  // logs: [{date, score}] where score 1 (very low) … 5 (very good). Uses the last 7.
+  function moodTrend(logs) {
+    var clean = (logs || []).filter(function (e) { return e && typeof e.score === 'number'; });
+    var recent = clean.slice(-7);
+    var n = recent.length;
+    if (n === 0) {
+      return { count: 0, ready: false, note: 'Log your mood for a few days and Chitti will gently show the trend.', disclaimer: TREND_DISCLAIMER, escalate: false, diagnosed: false };
+    }
+    var sum = 0, i;
+    for (i = 0; i < n; i++) sum += recent[i].score;
+    var avg = sum / n;
+    var direction = 'steady';
+    if (n >= 2) {
+      var splitAt = Math.ceil(n / 2), fs = 0, fc = 0, ss = 0, sc = 0;
+      for (i = 0; i < n; i++) { if (i < splitAt) { fs += recent[i].score; fc++; } else { ss += recent[i].score; sc++; } }
+      var firstAvg = fs / fc, secondAvg = ss / sc;
+      if (secondAvg - firstAvg >= 0.3) direction = 'improving';
+      else if (firstAvg - secondAvg >= 0.3) direction = 'declining';
+    }
+    var low = 0;                          // consecutive low days (score <= 2) ending today
+    for (i = recent.length - 1; i >= 0; i--) { if (recent[i].score <= 2) low++; else break; }
+    var escalate = low >= 3;              // SOP 05: 3 consecutive sad days → gentle offer
+    var res = {
+      count: n, ready: true, average: Math.round(avg * 10) / 10, direction: direction,
+      lowStreak: low, escalate: escalate, note: TREND_NOTE[direction], disclaimer: TREND_DISCLAIMER, diagnosed: false
+    };
+    if (escalate) {
+      res.gentleOffer = 'You’ve had a few heavy days in a row. Would you like to talk to a trained person? It can help.';
+      res.helplines = helplines();
+    }
+    return res;
+  }
+
+  // ── BO4 — CBT thought reframing (name the distortion → 3 balanced perspectives) ──
+  var DISTORTIONS = [
+    { key: 'all_or_nothing', re: /\b(always|never|everything|nothing|completely|totally|no one|everyone)\b/i, label: 'All-or-nothing thinking', reframe: 'Life is rarely all-or-nothing — where is the middle ground here?' },
+    { key: 'catastrophizing', re: /\b(disaster|ruined|terrible|worst|unbearable|never recover|end of (my|the)|can.?t survive)\b/i, label: 'Catastrophising', reframe: 'What is the most likely outcome — not the worst one?' },
+    { key: 'mind_reading', re: /\b(they think|everyone thinks|he thinks|she thinks|they hate|nobody likes|people think|they.?ll judge)\b/i, label: 'Mind-reading', reframe: 'I can’t truly know what others think unless I ask them.' },
+    { key: 'labeling', re: /\b(i.?m|i am)\s+(a\s+)?(failure|loser|stupid|worthless|idiot|useless|hopeless)\b/i, label: 'Labelling', reframe: 'I did something I’m unhappy with — that’s different from being a label.' },
+    { key: 'should', re: /\b(should|must|have to|ought to|supposed to)\b/i, label: '“Should” statements', reframe: 'Could “I would prefer to” fit better than “I must”?' },
+    { key: 'personalization', re: /\b(my fault|because of me|i ruined|i caused|i.?m to blame)\b/i, label: 'Personalisation', reframe: 'Many things shape an outcome — not just me.' },
+    { key: 'fortune_telling', re: /\b(will fail|won.?t work|going to fail|never going to|no point|pointless|hopeless)\b/i, label: 'Fortune-telling', reframe: 'I can’t predict the future with certainty.' }
+  ];
+  function cbtReframe(thought) {
+    var t = String(thought || '').trim();
+    var found = [];
+    for (var i = 0; i < DISTORTIONS.length; i++) {
+      if (DISTORTIONS[i].re.test(t)) found.push({ key: DISTORTIONS[i].key, label: DISTORTIONS[i].label, reframe: DISTORTIONS[i].reframe });
+    }
+    found = found.slice(0, 3);
+    var perspectives = [];
+    for (var j = 0; j < found.length; j++) perspectives.push(found[j].reframe);
+    var universal = [
+      'A thought is not a fact — this is one interpretation, not the only one.',
+      'What would I say to a good friend who had this exact thought?',
+      'What evidence supports this thought, and what evidence does not?'
+    ];
+    for (var u = 0; u < universal.length && perspectives.length < 3; u++) {
+      if (perspectives.indexOf(universal[u]) === -1) perspectives.push(universal[u]);
+    }
+    return {
+      thought: t,
+      distortions: found,
+      perspectives: perspectives.slice(0, 3),
+      question: 'Aur kya ho sakta hai? — What else could be true here?',
+      note: 'A thought is not a fact. This is a gentle exercise, not therapy.',
+      disclaimer: DISCLOSURE,
+      diagnosed: false
+    };
+  }
+
   // ── self-check used by tests: assert an output object never violates the boundary ──
   var BANNED = [
     /you have (depression|anxiety disorder|bipolar|ptsd|a disorder|adhd|schizophrenia)/i,
@@ -287,6 +365,8 @@
     parentingGuide: parentingGuide,
     woop: woop,
     ifThen: ifThen,
+    moodTrend: moodTrend,
+    cbtReframe: cbtReframe,
     helplines: helplines,
     a11ySupport: a11ySupport,
     respond: respond,

@@ -151,6 +151,34 @@
       <div class="out" id="par-out" role="region" aria-live="polite" aria-atomic="true"></div>
     </div>
 
+    <!-- BO3 — Mood log + 7-day stress trend -->
+    <div class="card" data-chitti-response="ps-mood" data-chitti-section="📊 Mood log — 7-day trend">
+      <span class="pill">📊 Mood diary</span>
+      <h2>आज का मूड · Today’s mood</h2>
+      <p class="sub">रोज़ एक टैप — कुछ दिनों बाद Chitti धीरे से pattern दिखाती है। (यह कोई बीमारी नहीं मापता।)</p>
+      <div id="mood-pick" role="group" aria-label="Aaj kaisa mehsoos hua — pick your mood" style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0">
+        <button type="button" class="btn ghost mood-emo" data-score="1" aria-label="Very low" style="font-size:22px;min-width:48px;min-height:48px">😢</button>
+        <button type="button" class="btn ghost mood-emo" data-score="2" aria-label="Low" style="font-size:22px;min-width:48px;min-height:48px">🙁</button>
+        <button type="button" class="btn ghost mood-emo" data-score="3" aria-label="Okay" style="font-size:22px;min-width:48px;min-height:48px">😐</button>
+        <button type="button" class="btn ghost mood-emo" data-score="4" aria-label="Good" style="font-size:22px;min-width:48px;min-height:48px">🙂</button>
+        <button type="button" class="btn ghost mood-emo" data-score="5" aria-label="Very good" style="font-size:22px;min-width:48px;min-height:48px">😄</button>
+      </div>
+      <button class="btn gold" id="mood-save">आज सेव करें / Save today</button>
+      <button class="btn ghost" id="mood-trend">7-दिन का trend / Show trend</button>
+      <div class="out" id="mood-out" role="region" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <!-- BO4 — CBT thought reframer -->
+    <div class="card" data-chitti-response="ps-cbt" data-chitti-section="🔄 Thought reframer — CBT">
+      <span class="pill">🔄 Thought reframer</span>
+      <h2>एक विचार को दोबारा देखिए</h2>
+      <p class="sub">जो नकारात्मक विचार बार-बार आता है वो लिखिए — Chitti उसे प्यार से दूसरे नज़रिए से देखने में मदद करेगी। (यह therapy नहीं है। एक विचार सच नहीं होता।)</p>
+      <label for="cbt-in">विचार / The thought</label>
+      <textarea id="cbt-in" placeholder="जैसे: मैं हमेशा हर चीज़ में fail हो जाता हूँ…"></textarea>
+      <button class="btn" id="cbt-go">दोबारा देखिए / Reframe</button>
+      <div class="out" id="cbt-out" role="region" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
   </div>
 
   <!-- Crisis card (also reachable from the sticky button) -->
@@ -179,6 +207,77 @@
 <script src="chitti_isl.js" defer></script>
 <script src="chitti_features.js" defer></script><!-- Feature Discovery reads skills/FEATURES.md -->
 <script src="chitti_psychology_app.js?v=20260608"></script>
+<!-- BO3 + BO4 — mood trend + CBT reframer wiring (deterministic engine) -->
+<script>
+(function(){
+  var E = window.ChittiPsychologyEngine; if(!E) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var KEY = 'chitti_ps_mood_v1';
+  var picked = null;
+  function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];}); }
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY)||'[]'); } catch(e){ return []; } }
+  function save(logs){ try { localStorage.setItem(KEY, JSON.stringify(logs.slice(-30))); } catch(e){} }
+  function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+  function speak(t){ try { if(window.Chitti&&Chitti.a11y&&Chitti.a11y.speak) Chitti.a11y.speak(t); } catch(e){} }
+
+  // mood emoji selection
+  Array.prototype.forEach.call(document.querySelectorAll('.mood-emo'), function(b){
+    b.addEventListener('click', function(){
+      picked = parseInt(b.getAttribute('data-score'),10);
+      document.querySelectorAll('.mood-emo').forEach(function(x){ x.style.outline=''; });
+      b.style.outline='3px solid #0E2344';
+    });
+  });
+  var saveBtn = $('mood-save');
+  if(saveBtn) saveBtn.addEventListener('click', function(){
+    var out = $('mood-out');
+    if(picked==null){ out.textContent = 'पहले ऊपर से आज का मूड चुनिए। / Pick today’s mood first.'; speak(out.textContent); return; }
+    var logs = load(); var tk = todayKey();
+    logs = logs.filter(function(e){ return e.date !== tk; });   // one entry per day
+    logs.push({ date: tk, score: picked });
+    save(logs);
+    out.textContent = '✅ आज सेव हो गया। रोज़ टैप करते रहिए — trend खुद बन जाएगा।';
+    speak('Saved for today.');
+  });
+  var trendBtn = $('mood-trend');
+  if(trendBtn) trendBtn.addEventListener('click', function(){
+    var out = $('mood-out'); var r = E.moodTrend(load());
+    if(!r.ready){ out.textContent = r.note; speak(r.note); return; }
+    var arrow = r.direction==='improving'?'📈':(r.direction==='declining'?'📉':'➡️');
+    var html = '<div><b>'+arrow+' '+esc(r.note)+'</b></div>'
+      + '<div style="margin-top:4px;font-size:13px;color:#475569">'+r.count+' din · average '+r.average+'/5'
+      + (r.lowStreak>=2 ? ' · '+r.lowStreak+' bhaari din lagataar' : '')+'</div>';
+    var spoken = r.note;
+    if(r.escalate){
+      html += '<div style="margin-top:10px;padding:10px;border:1px solid #f0c9c6;border-radius:9px;background:#fff6f5">'
+        + '<b>'+esc(r.gentleOffer)+'</b><div style="margin-top:6px">'
+        + r.helplines.slice(0,2).map(function(h){ return '<a href="tel:'+esc(h.number)+'" style="font-weight:800;text-decoration:none;background:#b3261e;color:#fff;border-radius:8px;padding:6px 12px;display:inline-block;margin:3px 4px 0 0">'+esc(h.name)+' '+esc(h.number)+'</a>'; }).join('')
+        + '</div></div>';
+      spoken += ' ' + r.gentleOffer;
+    }
+    html += '<div style="margin-top:8px;font-size:12px;color:#7a7466">'+esc(r.disclaimer)+'</div>';
+    out.innerHTML = html; speak(spoken);
+  });
+
+  // CBT reframer
+  var cbtBtn = $('cbt-go');
+  if(cbtBtn) cbtBtn.addEventListener('click', function(){
+    var out = $('cbt-out'); var t = ($('cbt-in')||{}).value || '';
+    if(!t.trim()){ out.textContent = 'पहले अपना विचार लिखिए। / Write the thought first.'; speak(out.textContent); return; }
+    var r = E.cbtReframe(t);
+    var html = '';
+    if(r.distortions.length){
+      html += '<div style="margin-bottom:6px">'+r.distortions.map(function(d){ return '<span class="em">'+esc(d.label)+'</span>'; }).join('')+'</div>';
+    }
+    html += '<div style="font-weight:700">दूसरे नज़रिए · Other ways to see it:</div><ul>'
+      + r.perspectives.map(function(p){ return '<li>'+esc(p)+'</li>'; }).join('') + '</ul>';
+    html += '<div style="margin-top:6px"><b>'+esc(r.question)+'</b></div>';
+    html += '<div style="margin-top:8px;font-size:12px;color:#7a7466">'+esc(r.note)+'</div>';
+    out.innerHTML = html;
+    speak(r.perspectives.join('. ') + '. ' + r.question);
+  });
+})();
+</script>
 <script src="chitti_lang.js?v=20260608"></script><!-- owns #lang-select (Vaani 26-lang) -->
 </body>
 </html>

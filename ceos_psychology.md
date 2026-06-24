@@ -199,8 +199,8 @@ Chitti Psychology is India's voice-first emotional wellbeing companion. It is NO
 |---|---|---|---|
 | BO1 | 26-language (currently partial) | ⭐ BUILD | 2h |
 | BO2 | 5-element widget all cards | ⭐ BUILD | 1h |
-| BO3 | Stress pattern (7-day trend) | ⭐ BUILD | 3h |
-| BO4 | CBT thought reframing | ⭐ BUILD | 4h |
+| BO3 | Stress pattern (7-day trend) | ✅ DONE — `moodTrend()` + SOP-05 escalation; engine test 37/37 + cert `tools/cert_psychology_bo3_bo4.mjs` 11/11 (2026-06-24) | 3h |
+| BO4 | CBT thought reframing | ✅ DONE — `cbtReframe()` (7 distortions → 3 perspectives + Socratic Q); engine 37/37 + cert 11/11 (2026-06-24) | 4h |
 | BO5 | Sleep hygiene guide | ⭐ BUILD | 2h |
 | BO6 | Family conflict guide | ⭐ BUILD | 3h |
 | BO7 | Financial stress module | ⭐ BUILD | 2h |

@@ -99,6 +99,37 @@ ok('violatesBoundary catches "you have depression"', P.violatesBoundary({ x: 'yo
 ok('violatesBoundary catches "you dont need help"', P.violatesBoundary({ x: "you don't need help" }) === true);
 ok('clean output passes', P.violatesBoundary({ x: 'I hear you, that sounds hard' }) === false);
 
+// ── 8. BO3 — Stress pattern (7-day mood trend) + SOP-05 escalation ──
+const empty = P.moodTrend([]);
+ok('moodTrend empty → not ready', empty.ready === false && empty.count === 0);
+const improving = P.moodTrend([{ score: 1 }, { score: 2 }, { score: 2 }, { score: 4 }, { score: 5 }]);
+eq('moodTrend improving direction', improving.direction, 'improving');
+const declining = P.moodTrend([{ score: 5 }, { score: 4 }, { score: 2 }, { score: 1 }]);
+eq('moodTrend declining direction', declining.direction, 'declining');
+const steady = P.moodTrend([{ score: 3 }, { score: 3 }, { score: 3 }]);
+eq('moodTrend steady direction', steady.direction, 'steady');
+const sad3 = P.moodTrend([{ score: 4 }, { score: 2 }, { score: 1 }, { score: 2 }]);
+ok('moodTrend 3 consecutive low → escalate (SOP-05)', sad3.escalate === true && JSON.stringify(sad3.helplines).includes('14416'));
+const sad2 = P.moodTrend([{ score: 4 }, { score: 1 }, { score: 2 }]);
+ok('moodTrend 2 low days → no escalation yet', sad2.escalate === false);
+ok('moodTrend uses only last 7 entries', P.moodTrend(Array.from({ length: 10 }, () => ({ score: 3 }))).count === 7);
+ok('moodTrend never diagnoses + carries disclaimer', sad3.diagnosed === false && /not a diagnosis/i.test(sad3.disclaimer));
+ok('moodTrend outputs pass boundary', !P.violatesBoundary(improving) && !P.violatesBoundary(sad3));
+
+// ── 9. BO4 — CBT thought reframing ──
+const allOr = P.cbtReframe('I always fail at everything');
+ok('cbtReframe detects all-or-nothing', allOr.distortions.some(d => d.key === 'all_or_nothing'));
+ok('cbtReframe returns exactly 3 perspectives', allOr.perspectives.length === 3);
+const cat = P.cbtReframe('this is a complete disaster, my life is ruined');
+ok('cbtReframe detects catastrophising', cat.distortions.some(d => d.key === 'catastrophizing'));
+const mr = P.cbtReframe('everyone thinks I am stupid and they hate me');
+ok('cbtReframe detects mind-reading + labelling', mr.distortions.some(d => d.key === 'mind_reading') && mr.distortions.some(d => d.key === 'labeling'));
+ok('cbtReframe caps distortions at 3', mr.distortions.length <= 3);
+const neutral = P.cbtReframe('I had tea this morning');
+ok('cbtReframe neutral thought → still 3 universal perspectives', neutral.distortions.length === 0 && neutral.perspectives.length === 3);
+ok('cbtReframe never diagnoses + has Socratic question', allOr.diagnosed === false && /What else could be true/i.test(allOr.question));
+ok('cbtReframe outputs pass boundary', !P.violatesBoundary(allOr) && !P.violatesBoundary(cat) && !P.violatesBoundary(mr) && !P.violatesBoundary(neutral));
+
 // ── REPORT ──
 console.log(`\nChitti Psychology engine gold test: ${pass} passed, ${fail} failed`);
 console.log(`Crisis recall: ${(recall * 100).toFixed(1)}% (${crisisCaught}/${crisisTotal}) · false-pos: ${fp} · emotion: ${(emoRate * 100).toFixed(1)}%`);
