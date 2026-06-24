@@ -55,6 +55,21 @@
     .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.actions > *{flex:1;min-width:120px}
     .empty{text-align:center;color:var(--muted);padding:24px}
     .gate{background:#fff8e1;border:1.5px solid var(--amber);border-radius:10px;padding:12px;font-size:14px;margin-top:10px}
+    /* BO11 — Kanban pipeline board. Columns scroll horizontally INSIDE the board; page never overflows 375px. */
+    .view-toggle{display:flex;gap:8px;margin:0 0 12px}
+    .view-toggle button{flex:1;background:#fff;border:1.5px solid var(--border);color:var(--navy);border-radius:12px;padding:11px;font-weight:800;cursor:pointer;min-height:44px}
+    .view-toggle button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .kanban{display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 12px;scroll-snap-type:x proximity}
+    .kcol{flex:0 0 240px;max-width:240px;background:#f4f6fb;border:1.5px solid var(--border);border-radius:14px;padding:10px;scroll-snap-align:start}
+    .kcol-head{display:flex;align-items:center;justify-content:space-between;font-weight:900;color:var(--navy);font-size:14px;padding:2px 4px 8px}
+    .kcol-head .kn{background:#e6ecff;color:#002366;border-radius:999px;padding:1px 9px;font-size:12.5px;font-weight:800}
+    .kcol.k-offer{background:#ecfdf3}.kcol.k-offer .kcol-head{color:#14532d}
+    .kcol.k-rejected{background:#fef2f2}.kcol.k-rejected .kcol-head{color:#7f1d1d}
+    .kcard{background:#fff;border:1.5px solid var(--border);border-radius:11px;padding:11px;margin-bottom:9px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+    .kcard h3{margin:0 0 3px;font-size:14.5px;color:var(--navy);line-height:1.25}
+    .kcard .kco{font-size:12.5px;color:var(--muted)}
+    .kcard .actions{margin-top:9px}.kcard .actions > *{font-size:12.5px;padding:9px;min-width:0}
+    .kcol-empty{color:var(--muted);font-size:12.5px;text-align:center;padding:14px 4px}
     .kbcol h3{font-size:14px;color:var(--navy);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.04em}
     .level-badge{display:inline-block;background:var(--gold);color:#3a2a00;font-weight:800;border-radius:8px;padding:4px 10px;font-size:13px;margin-top:6px}
     a.maillink{display:block;text-align:center;background:var(--green);color:#fff;border-radius:10px;padding:13px;font-weight:800;text-decoration:none;margin-top:8px}
@@ -75,6 +90,8 @@
 </div>
 
 <header class="app">
+  <!-- ← Vaani back button in HEADER (Vaani is the sole user interface, SAHAYAI_MASTER §2). 44px tap target. -->
+  <a href="chitti_vaani.html" class="hdr-back" aria-label="Back to Chitti Vaani — your voice assistant" style="display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:#0E2344;color:#fff;text-decoration:none;border:1px solid #D4AF37;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:700;min-height:44px;white-space:nowrap;margin-bottom:8px">← Vaani</a>
   <div class="brand">
     <div class="logo" aria-hidden="true">💼</div>
     <div>
@@ -181,7 +198,13 @@
       <button class="btn-ghost" id="load-pipeline" style="width:100%">↻ Refresh pipeline</button>
       <div id="pipeline-counts" class="muted" style="margin-top:8px"></div>
     </div>
-    <div id="pipeline-list"></div>
+    <!-- BO11 — view toggle: Board (Kanban) ↔ List -->
+    <div class="view-toggle" role="group" aria-label="Pipeline view">
+      <button type="button" id="view-board" aria-pressed="true">📊 Board</button>
+      <button type="button" id="view-list" aria-pressed="false">📋 List</button>
+    </div>
+    <div id="pipeline-board" data-chitti-response="pipeline-board" aria-live="polite"></div>
+    <div id="pipeline-list" hidden></div>
   </section>
 </main>
 
@@ -198,9 +221,15 @@ function uid(){
 }
 const H = () => ({ "Content-Type":"application/json", "X-User-Token": uid() });
 async function api(path, opts={}){
-  const r = await fetch(API+path, { headers:H(), ...opts });
-  let j=null; try{ j=await r.json(); }catch(e){}
-  return { ok:r.ok, status:r.status, j };
+  // Graceful degradation: a network failure / backend outage must never throw
+  // an unhandled rejection — callers branch on ok===false.
+  try{
+    const r = await fetch(API+path, { headers:H(), ...opts });
+    let j=null; try{ j=await r.json(); }catch(e){}
+    return { ok:r.ok, status:r.status, j };
+  }catch(e){
+    return { ok:false, status:0, j:null, error:String(e) };
+  }
 }
 const $ = id => document.getElementById(id);
 const esc = s => (s||"").replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
@@ -322,27 +351,82 @@ async function doApply(btn, override){
   });
 }
 
-// ── BO10 pipeline ──
-async function loadPipeline(){
-  $("pipeline-list").innerHTML='<div class="empty">Loading…</div>';
-  const {ok,j} = await api("/api/jobs/pipeline");
-  if(!ok){ $("pipeline-list").innerHTML='<div class="empty">Set up your profile first.</div>'; return; }
-  if(!j.applications.length){ $("pipeline-list").innerHTML='<div class="empty">No applications yet.</div>'; $("pipeline-counts").textContent=""; return; }
-  $("pipeline-counts").innerHTML = Object.entries(j.counts).filter(([,n])=>n).map(([s,n])=>`<span class="pill navy">${s}: ${n}</span>`).join(" ");
-  const NEXT={applied:["replied","rejected"],replied:["interview","rejected"],interview:["offer","rejected"],offer:[],found:["applied"],reviewed:["applied"]};
-  $("pipeline-list").innerHTML = j.applications.map(a=>{
-    const opts=(NEXT[a.status]||[]).map(s=>`<button class="btn-ghost act-status" data-app="${a.id}" data-s="${s}">Mark ${s}</button>`).join("");
+// ── BO10/BO11 pipeline (Board + List views, same /api/jobs/pipeline data) ──
+const PIPE_NEXT={found:["applied"],reviewed:["applied"],applied:["replied","rejected"],replied:["interview","rejected"],interview:["offer","rejected"],offer:[]};
+// BO11 — Kanban stages, left→right. Rejected is its own terminal column.
+const KANBAN_STAGES=[
+  {key:"found",label:"📥 Found"},{key:"reviewed",label:"👀 Reviewed"},{key:"applied",label:"✉️ Applied"},
+  {key:"replied",label:"💬 Replied"},{key:"interview",label:"🎤 Interview"},{key:"offer",label:"🎉 Offer"},{key:"rejected",label:"🚫 Rejected"}
+];
+let PIPE_VIEW = (localStorage.getItem("jobs_pipe_view")||"board");
+
+function pipeStatusOpts(a){
+  return (PIPE_NEXT[a.status]||[]).map(s=>`<button class="btn-ghost act-status" data-app="${a.id}" data-s="${s}">Mark ${s}</button>`).join("");
+}
+
+function renderKanban(apps){
+  const board=$("pipeline-board");
+  const byStage={}; KANBAN_STAGES.forEach(s=>byStage[s.key]=[]);
+  apps.forEach(a=>{ (byStage[a.status]||(byStage[a.status]=[])).push(a); });
+  board.innerHTML = `<div class="kanban" role="list" aria-label="Application pipeline board">` + KANBAN_STAGES.map(s=>{
+    const items=byStage[s.key]||[];
+    const cards = items.length ? items.map(a=>{
+      const opts=pipeStatusOpts(a);
+      return `<div class="kcard" data-chitti-response="app-${a.id}">
+        <h3>${esc(a.job.title||"Job")}</h3>
+        <div class="kco">${esc(a.job.company||"")}${a.job.location?(" · "+esc(a.job.location)):""}</div>
+        ${opts?`<div class="actions">${opts}</div>`:""}
+      </div>`; }).join("")
+      : `<div class="kcol-empty">—</div>`;
+    return `<div class="kcol k-${s.key}" role="listitem">
+      <div class="kcol-head"><span>${s.label}</span><span class="kn">${items.length}</span></div>
+      ${cards}
+    </div>`;
+  }).join("") + `</div>`;
+}
+
+function renderList(apps){
+  $("pipeline-list").innerHTML = apps.map(a=>{
+    const opts=pipeStatusOpts(a);
     return `<div class="card" data-chitti-response="app-${a.id}">
       <div style="display:flex;justify-content:space-between"><h2 style="margin:0">${esc(a.job.title||"Job")}</h2><span class="pill ${a.status==='offer'?'green':a.status==='rejected'?'amber':'navy'}">${a.status}</span></div>
       <div class="muted">${esc(a.job.company||"")} ${a.job.location?("· "+esc(a.job.location)):""}</div>
       ${opts?`<div class="actions">${opts}</div>`:""}
     </div>`; }).join("");
-  $("pipeline-list").querySelectorAll(".act-status").forEach(b=>b.addEventListener("click", async ()=>{
+}
+
+function wireStatusButtons(){
+  document.querySelectorAll("#pipeline-board .act-status, #pipeline-list .act-status").forEach(b=>b.addEventListener("click", async ()=>{
+    b.disabled=true;
     await api(`/api/jobs/applications/${b.dataset.app}/status`,{method:"POST",body:JSON.stringify({status:b.dataset.s})});
     loadPipeline();
   }));
 }
+
+function applyPipeView(){
+  const board = PIPE_VIEW==="board";
+  $("pipeline-board").hidden=!board; $("pipeline-list").hidden=board;
+  $("view-board").setAttribute("aria-pressed", board?"true":"false");
+  $("view-list").setAttribute("aria-pressed", board?"false":"true");
+}
+
+async function loadPipeline(){
+  $("pipeline-board").innerHTML='<div class="empty">Loading…</div>';
+  const {ok,j} = await api("/api/jobs/pipeline");
+  if(!ok){ $("pipeline-board").innerHTML='<div class="empty">Set up your profile first.</div>'; $("pipeline-list").innerHTML=""; return; }
+  if(!j.applications.length){
+    $("pipeline-board").innerHTML='<div class="empty">No applications yet — find a job and let Chitti draft your first one.</div>';
+    $("pipeline-list").innerHTML='<div class="empty">No applications yet.</div>'; $("pipeline-counts").textContent=""; applyPipeView(); return;
+  }
+  $("pipeline-counts").innerHTML = Object.entries(j.counts).filter(([,n])=>n).map(([s,n])=>`<span class="pill navy">${s}: ${n}</span>`).join(" ");
+  renderKanban(j.applications);
+  renderList(j.applications);
+  wireStatusButtons();
+  applyPipeView();
+}
 $("load-pipeline").addEventListener("click", loadPipeline);
+$("view-board").addEventListener("click", ()=>{ PIPE_VIEW="board"; localStorage.setItem("jobs_pipe_view","board"); applyPipeView(); });
+$("view-list").addEventListener("click", ()=>{ PIPE_VIEW="list"; localStorage.setItem("jobs_pipe_view","list"); applyPipeView(); });
 
 // Prefill known profile on load (so returning users see they're known).
 (async ()=>{

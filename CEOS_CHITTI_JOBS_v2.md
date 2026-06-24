@@ -381,7 +381,7 @@ candidates don't have."
 | BO8 | Gmail API integration — OAuth + send on approval | All | 🔴 CRITICAL | 2h |
 | BO9 | Approval flow — daily digest to user: jobs 7+, Apply/Skip buttons | All | 🔴 CRITICAL | 2h |
 | BO10 | Application CRM — Turso status tracking | All | 🔴 CRITICAL | 2h |
-| BO11 | chitti_jobs.html dashboard — Kanban pipeline view | All | 🟡 HIGH | 3h |
+| BO11 | chitti_jobs.html dashboard — Kanban pipeline view | All | ✅ DONE — cert `tools/cert_jobs_bo11.mjs` 11/11 GREEN (2026-06-24): 7 stage columns, internal scroll, 375px clean, 0 JS errors, ← Vaani header, board↔list toggle | 3h |
 | BO12 | iimjobs + Gulf Talent + Foundit scraper | Senior + Gulf | 🟡 HIGH | 3h |
 | BO13 | Internshala + Apna + WorkIndia scraper | Fresher | 🟡 HIGH | 2h |
 | BO14 | Follow-up engine — day 5 auto-draft + recruiter reply handler | All | 🟡 HIGH | 3h |
