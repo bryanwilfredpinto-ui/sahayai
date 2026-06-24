@@ -241,7 +241,7 @@ Chitti MedUPI is India's first voice-first, Jan-Aushadhi-first medicine price co
 | 24 | Demo mode (sample data, no real scan) | ✅ LIVE |
 | 25 | 9-language UI (EN/HI + 7 Indian) | ✅ LIVE |
 | 26 | NPPA overcharge detection | ⭐ BUILD |
-| 27 | Drug-drug interaction checker | ⭐ BUILD |
+| 27 | Drug-drug interaction checker | ✅ LIVE (BO3, 2026-06-24) — class-based DDI engine, 26/26 + cert 10/10 |
 | 28 | Medicine authentication (PharmaSecure QR) | ⭐ BUILD |
 | 29 | 12-month savings bar chart | ⭐ BUILD |
 | 30 | WhatsApp + Twilio voice reminder channels | 🔶 PARTIAL |
@@ -556,7 +556,7 @@ Data Sources:
 |---|---|---|---|
 | BO1 | Vaani Integration | ⭐ BUILD | 2h |
 | BO2 | NPPA Overcharge Detection | ⭐ BUILD | 3h |
-| BO3 | Drug-Drug Interaction | ⭐ BUILD | 4h |
+| BO3 | Drug-Drug Interaction | ✅ DONE — engine `tools/test_medupi_interactions.mjs` 26/26 + cert `tools/cert_medupi_bo3.mjs` 10/10 GREEN (2026-06-24); class-based DDI (`chitti_medupi_interactions.js` + backend `medupi_interactions.py` + `POST /api/medupi/interactions`) | 4h |
 | BO4 | Reminder Channels | 🔶 PARTIAL | 3h |
 | BO5 | 12-Month Chart | ⭐ BUILD | 2h |
 | BO6 | Community Price Reporting | ⭐ BUILD | 3h |

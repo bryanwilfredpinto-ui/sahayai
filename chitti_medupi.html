@@ -238,6 +238,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <nav class="tabs" role="tablist" aria-label="Sections" data-i18n-aria="sections">
   <button class="tab active" data-tab="scan"      onclick="showTab('scan')"      role="tab" aria-selected="true"  data-i18n="tab.scan">📷 Scan</button>
   <button class="tab"        data-tab="compare"   onclick="showTab('compare')"   role="tab" aria-selected="false" data-i18n="tab.compare">💊 Compare</button>
+  <button class="tab"        data-tab="interactions" onclick="showTab('interactions')" role="tab" aria-selected="false" data-i18n="tab.interactions">🔀 Interactions</button>
   <button class="tab"        data-tab="health-file" onclick="showTab('health-file')" role="tab" aria-selected="false" data-i18n="tab.health_file">🩺 Health File</button>
   <button class="tab"        data-tab="wallet"    onclick="showTab('wallet')"    role="tab" aria-selected="false" data-i18n="tab.wallet">👨‍👩‍👧 Family Wallet</button>
   <button class="tab"        data-tab="reminders" onclick="showTab('reminders')" role="tab" aria-selected="false" data-i18n="tab.reminders">🔔 Reminders</button>
@@ -409,6 +410,36 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
       <!-- Result block (filled by runCartSim) -->
       <div id="cart-result" class="section-empty" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Monthly savings calculator" style="margin-top:14px">Add at least one line above and tap Calculate to see your monthly + annual savings.</div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ INTERACTIONS TAB (BO3 — drug–drug interaction) ════════════════════ -->
+  <section id="tab-interactions" class="page" role="tabpanel">
+    <div class="section-card chitti-response" data-chitti-section="Drug interaction check">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🔀 Drug Interaction Check <span class="live-badge" data-i18n="badge.live">LIVE</span></div>
+          <div class="section-sub" data-i18n="ddi.sub">Add the medicines a person takes together. Chitti checks a curated list of well-known interactions and explains the risk in plain language. It never diagnoses and never clears a combination as safe — always confirm with your doctor or pharmacist.</div>
+        </div>
+      </div>
+
+      <div class="search-row" style="margin-top:4px">
+        <label for="ddi-input" class="sr-only" data-i18n="ddi.add.lbl">Add a medicine by molecule name</label>
+        <input id="ddi-input" placeholder="Add a molecule… e.g. Warfarin, Aspirin, Ibuprofen" autocomplete="off" data-i18n-placeholder="ddi.add.ph" onkeydown="if(event.key==='Enter'){event.preventDefault();ddiAdd();}">
+        <button id="ddi-mic" class="mic-btn" type="button" onclick="ddiMic()" aria-label="Speak a medicine name to add" data-i18n-aria="speak-a-medicine-name-to-add">🎤</button>
+        <button class="cta-saffron" type="button" onclick="ddiAdd()" data-i18n="ddi.add">Add</button>
+      </div>
+      <div id="ddi-chips" role="list" aria-label="Medicines to check" style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="cta-saffron" type="button" onclick="ddiCheck()" style="flex:1;min-width:160px;min-height:48px" data-i18n="ddi.check">🔀 Check interactions</button>
+        <button class="scan-action" type="button" onclick="ddiClear()" style="min-height:48px;padding:0 16px" data-i18n="ddi.clear">Clear</button>
+      </div>
+
+      <div id="ddi-results" class="section-empty" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Drug interaction results" style="margin-top:14px" data-i18n="ddi.empty">Add at least two medicines, then tap “Check interactions”. Chitti reads the result aloud.</div>
+
+      <div style="margin-top:12px;padding:10px 12px;background:rgba(232,106,23,.08);border-left:3px solid var(--saffron);border-radius:0 8px 8px 0;font-size:13px" role="note">
+        <span data-i18n="ddi.disc">⚠️ Information aid only — “no interaction found” does NOT mean a combination is safe. Always confirm with your doctor or pharmacist before taking medicines together.</span>
+      </div>
     </div>
   </section>
 
@@ -2737,6 +2768,84 @@ async function chittiAskSend() {
 <!-- Chitti i18n substrate — chitti_lang.js?v=20260529r baked T-table + chitti_a11y.js?v=20260529r widget+QR supplement. 2026-05-22 -->
 <script src="chitti_lang.js?v=20260529r"></script>
 <script src="chitti_a11y.js?v=20260529r"></script>
+
+<!-- BO3 — deterministic drug-interaction engine + UI wiring -->
+<script src="chitti_medupi_interactions.js"></script>
+<script>
+(function(){
+  var meds = [];
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s||'').replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  function lang(){ try { return (document.documentElement.getAttribute('lang')||'en').slice(0,2); } catch(e){ return 'en'; } }
+  function speak(t){ try { if (window.Chitti && Chitti.a11y && Chitti.a11y.speak) Chitti.a11y.speak(t); } catch(e){} }
+
+  function renderChips(){
+    var host = $('ddi-chips'); if(!host) return;
+    if(!meds.length){ host.innerHTML = '<span class="muted" style="font-size:13px;color:var(--ink-2,#666)" data-i18n="ddi.none_added">No medicines added yet.</span>'; return; }
+    host.innerHTML = meds.map(function(m, i){
+      return '<span role="listitem" style="display:inline-flex;align-items:center;gap:6px;background:#eef2ff;color:#1e2a55;border:1px solid #c7d2fe;border-radius:999px;padding:7px 12px;font-size:14px;font-weight:700">'
+        + esc(m)
+        + '<button type="button" aria-label="Remove ' + esc(m) + '" onclick="ddiRemove(' + i + ')" style="background:none;border:none;color:#1e2a55;font-size:16px;line-height:1;cursor:pointer;min-width:24px;min-height:24px">✕</button></span>';
+    }).join('');
+  }
+
+  window.ddiAdd = function(){
+    var inp = $('ddi-input'); if(!inp) return;
+    var v = (inp.value||'').trim();
+    if(!v) return;
+    var norm = window.MedupiInteractions.normalize(v);
+    if(meds.map(function(m){return window.MedupiInteractions.normalize(m);}).indexOf(norm) === -1) meds.push(v);
+    inp.value=''; inp.focus(); renderChips();
+  };
+  window.ddiRemove = function(i){ meds.splice(i,1); renderChips(); };
+  window.ddiClear = function(){ meds=[]; renderChips(); var r=$('ddi-results'); if(r){ r.className='section-empty'; r.textContent = (lang()==='hi'?'दो या अधिक दवाएँ जोड़ें, फिर “Check interactions” दबाएँ।':'Add at least two medicines, then tap “Check interactions”.'); } };
+  window.ddiMic = function(){ if(typeof startVoiceSearch==='function'){ /* reuse if present */ } var inp=$('ddi-input'); if(inp) inp.focus(); };
+
+  window.ddiCheck = function(){
+    var r = $('ddi-results'); if(!r) return;
+    var hi = lang()==='hi';
+    if(meds.length < 2){
+      r.className='section-empty';
+      r.textContent = hi ? 'कृपया कम से कम दो दवाएँ जोड़ें।' : 'Please add at least two medicines to check.';
+      speak(r.textContent);
+      return;
+    }
+    var res = window.MedupiInteractions.check(meds);
+    r.className='';
+    var html = '';
+    if(res.count === 0){
+      html += '<div style="padding:14px;border-radius:12px;background:rgba(34,197,94,.08);border:1px solid var(--med-green,#16a34a)">'
+        + '<div style="font-weight:800;font-size:15px">✅ ' + (hi?'चिट्टी की सूची में कोई ज्ञात बड़ी अंतरक्रिया नहीं मिली':'No known major interaction found in Chitti’s checked list') + '</div>'
+        + '<div style="margin-top:6px;font-size:13.5px">' + (hi?res.disclaimer_hi:res.disclaimer_en) + '</div></div>';
+      speak((hi?'कोई ज्ञात बड़ी अंतरक्रिया नहीं मिली। ':'No known major interaction found. ') + (hi?res.disclaimer_hi:res.disclaimer_en));
+    } else {
+      var sev = res.highest === 'severe';
+      html += '<div style="font-weight:800;font-size:15px;margin-bottom:10px">'
+        + (sev?'⛔ ':'⚠️ ') + res.count + ' ' + (hi?'अंतरक्रिया मिली':'interaction' + (res.count>1?'s':'') + ' found') + '</div>';
+      html += res.interactions.map(function(it){
+        var border = it.severity==='severe' ? 'var(--med-red,#dc2626)' : '#d97706';
+        var bg = it.severity==='severe' ? 'rgba(220,38,38,.06)' : 'rgba(217,119,6,.08)';
+        return '<div class="chitti-response" data-chitti-response="ddi-' + esc(it.a) + '-' + esc(it.b) + '" data-chitti-section="Interaction" style="margin-bottom:10px;padding:12px;border-radius:12px;border:1px solid ' + border + ';background:' + bg + '">'
+          + '<div style="font-weight:800;font-size:14.5px">' + it.symbol + ' ' + esc(it.a) + ' + ' + esc(it.b) + '</div>'
+          + '<div style="font-weight:700;font-size:12.5px;margin:3px 0 7px">' + esc(hi?it.label_hi:it.label_en) + '</div>'
+          + '<div style="font-size:13.5px">' + esc(it.mechanism_en) + '</div>'
+          + '<div style="font-size:13.5px;margin-top:6px"><b>' + (hi?'क्या करें: ':'What to do: ') + '</b>' + esc(it.advice_en) + '</div>'
+          + (hi ? '<div style="font-size:13px;margin-top:4px;color:#7c2d12">' + esc(it.hi_summary) + '</div>' : '')
+          + '</div>';
+      }).join('');
+      html += '<div style="font-size:13px;margin-top:4px;color:var(--ink-2,#555)">' + (hi?res.disclaimer_hi:res.disclaimer_en) + '</div>';
+      // Voice summary (four-user contract: blind/illiterate hear the verdict).
+      var spoken = (sev ? (hi?'सावधान। ':'Warning. ') : '') + res.count + (hi?' अंतरक्रिया मिली। ':' interactions found. ')
+        + res.interactions.map(function(it){ return it.a + ' ' + (hi?'और':'and') + ' ' + it.b; }).join(', ') + '. '
+        + (hi?res.disclaimer_hi:res.disclaimer_en);
+      speak(spoken);
+    }
+    r.innerHTML = html;
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', renderChips); else renderChips();
+})();
+</script>
 
 </body>
 </html>

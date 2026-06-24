@@ -70,6 +70,7 @@ from services import (
     medupi_community,
     medupi_family,
     medupi_insurance,
+    medupi_interactions,
     medupi_jan_aushadhi,
     medupi_price_alerts,
     medupi_recognition,
@@ -295,6 +296,21 @@ def alternatives(db):
 @bp.get("/risk/<path:molecule>")
 def risk(molecule):
     return jsonify(medupi_risk.classify(molecule))
+
+
+@bp.post("/interactions")
+def interactions():
+    """BO3 — deterministic drug–drug interaction check.
+
+    Body: {"medicines": ["Warfarin", "Aspirin", ...]}  (alias: "molecules")
+    Returns the same shape as the client engine. Never diagnoses; never
+    clears a combination as safe.
+    """
+    body = _json_body()
+    meds = body.get("medicines") or body.get("molecules") or []
+    if not isinstance(meds, list):
+        abort(400, "medicines must be a list")
+    return jsonify(medupi_interactions.check([str(m) for m in meds]))
 
 
 # ─────────────────────────────────────────────────────

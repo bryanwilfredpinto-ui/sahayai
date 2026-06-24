@@ -1,4 +1,4 @@
-# CHITTI SOP — Standard Operating Profile for all 15 Chittis
+# CHITTI SOP — Standard Operating Profile for all 21 Chittis
 
 **Created:** 2026-05-15 · **Owner:** Bryan Wilfred Pinto (Sire) ·
 **Companion docs:** [SAHAYAI_MASTER.md](SAHAYAI_MASTER.md) (vision + locked decisions) · [QUALITY_STATUS.md](QUALITY_STATUS.md) (live audit).
@@ -235,6 +235,78 @@ See [SAHAYAI_MASTER.md §2g](SAHAYAI_MASTER.md) for the full architectural callo
 | **Scope** | **Does:** Self-ping all Chitti `/health`, DAILY 07:00 IST quality+defect email, WEEKLY Sun 08:00 IST trend digest, HOURLY :15 escalator pass, Sunday 09:00 IST Swarm pass, LLM fallback shim chain (DeepSeek → Claude → Gemini, surfaces honest fallback notice — never silent). **Does NOT:** expose user-facing endpoints, originate LLM responses, replace per-Chitti observability, swallow failures silently. |
 | **Evolution owner** | [chitti-founder/backend/main.py](chitti-founder/backend/main.py), [lib/founder_report.py](lib/founder_report.py), [lib/chitti_quality.py](lib/chitti_quality.py). Sire approves every new cron + report column. |
 | **Stale data rule** | Quality slices recomputed per cron tick (no caching of stale slices). Self-ping log retained 30 days, then rolled up to weekly aggregates. Aggregator never caches user data. `"Chitti forget"` tombstones honoured across every aggregate. |
+
+## 16. Chitti Fashion — styling & wardrobe OS
+
+| Field | Value |
+|---|---|
+| **Objective** | Plain-language styling for every Indian body, budget, occasion and skin tone — colour analysis, seasonal / festive / bridal planning — without a personal stylist. |
+| **Primary user** | Tier-2/3 Indian dressing for a wedding / festival / interview on a budget; anyone unsure what suits them. |
+| **Success metric** | (a) styling-relevance 👍; (b) *"I wore it / felt confident"* follow-up; (c) occasion-coverage breadth. |
+| **Quality standard** | Fashion OS (CFOS) doc set under [chitti-fashion/](chitti-fashion/); deterministic engine (`seasonalSuitability`, `planWedding`, colour/season palette); CERTIFICATION_REPORT 14/14 responsive + accessibility 100/100; per-response widget; **never body-shames, never colour-only**. Frontend [chitti_fashion.html](chitti_fashion.html). |
+| **Scope** | **Does:** colour / season analysis, wedding + festive planner, occasion + budget styling, senior & kids lens. **Does NOT:** sell clothes, judge appearance, claim brand endorsements. (Maternity styling + style-personality quiz + community sharing = COMING SOON.) |
+| **Evolution owner** | [chitti-fashion/skills/FEATURES.md](chitti-fashion/skills/FEATURES.md) + CFOS docs. Sire reviews new style rules. |
+| **Stale data rule** | Festival calendar refreshed annually; seasonal palettes reviewed each season; fabric / occasion tables on Sire request. |
+
+## 17. Chitti ISL — Indian Sign Language surface (accessibility substrate)
+
+| Field | Value |
+|---|---|
+| **Objective** | Give 6 crore Deaf Indians a first-class **Indian** Sign Language (not ASL) layer beside every Chitti response — dictionary, per-response animation, tap-word-to-sign. |
+| **Primary user** | Deaf / hard-of-hearing Indian using any Chitti; ISL learners. |
+| **Success metric** | (a) signed-word coverage of the dictionary; (b) Deaf-user 👍 on the animation panel; (c) tap-word usage. |
+| **Quality standard** | Phase 1 LIVE via [chitti_a11y.js](chitti_a11y.js) + [chitti_isl_dictionary.json](chitti_isl_dictionary.json) (dictionary + per-response animation panel + tap-word modal + fingerspell alphabet); **honest placeholder animations — NEVER claims sign accuracy**; contrast / font / vibration controls. Phases 2 (camera detection) + 3 (community videos + Hall of Fame) are honest COMING SOON. Substrate auto-injected on every page. |
+| **Scope** | **Does:** ISL dictionary lookup, per-response sign animation, tap-any-word-to-sign, fingerspelling. **Does NOT:** claim camera ISL detection (Phase 2 stub), convert full ISL grammar / SOV (BO not built), accept community videos yet (Phase 3 stub). |
+| **Evolution owner** | [chitti_a11y.js](chitti_a11y.js) (ISL plugin) + [chitti_isl_dictionary.json](chitti_isl_dictionary.json) + [ceos_isl.md](ceos_isl.md). SOV grammar engine + camera + community are roadmap; Sire approves any accessibility-accuracy claim. |
+| **Stale data rule** | Dictionary entries reviewed as community contributions land; never promote a sign to *"verified"* without Deaf-community validation. |
+
+## 18. Chitti Psychology — mental-health companion layer (HIGH-risk)
+
+| Field | Value |
+|---|---|
+| **Objective** | PhD-grade, culturally-grounded emotional support reached through Vaani — listen, normalise, teach coping — with a strict therapist boundary and a crisis cascade. |
+| **Primary user** | Any Indian in distress (stress, grief, relationship / financial strain), especially those who would never see a therapist. |
+| **Success metric** | (a) crisis-detection recall (=100% target); (b) *"felt heard / helped"* follow-up 👍; (c) safe-handoff rate to helplines when warranted. |
+| **Quality standard** | [chitti-vaani/skills/PSYCHOLOGY.md](chitti-vaani/skills/PSYCHOLOGY.md) held basics→PhD; **crisis cascade ALWAYS routes to Tele-MANAS 14416 + iCall + Vandrevala + NIMHANS** (never silent); deterministic engine `chitti_psychology_os_engine.js` (crisis 100%); HIGH-risk Golden Rule (no *"approve once"*); **NEVER diagnoses, prescribes, or replaces a therapist**; per-response widget. Standalone `chitti_psychology.html` is dev/debug; the canonical path is Vaani. |
+| **Scope** | **Does:** emotional mirroring, calm / breathing, coping steps, NVC / relationship + parenting primers, psychoeducation, crisis escalation. **Does NOT:** diagnose, prescribe, act as a licensed therapist, bypass the helpline cascade in a crisis. (Stress 7-day trend + CBT reframer + sleep / grief / financial modules = BUILD.) |
+| **Evolution owner** | [chitti-vaani/skills/PSYCHOLOGY.md](chitti-vaani/skills/PSYCHOLOGY.md) + [ceos_psychology.md](ceos_psychology.md). HIGH-risk — Sire approves every corpus change. |
+| **Stale data rule** | Helpline numbers re-verified quarterly; corpus reviewed quarterly; the locked emergency protocol is never stale. |
+
+## 19. Chitti Kisan — farmer ownership OS
+
+| Field | Value |
+|---|---|
+| **Objective** | Voice-first farming dost — crop / soil / irrigation / organic advice, livestock care + Pashu-1962 vet line, and (incoming) live IMD weather + Agmarknet mandi prices — for small & marginal farmers. |
+| **Primary user** | Small / marginal Indian farmer (often low-literacy, vernacular) and livestock owners. |
+| **Success metric** | (a) advice-relevance 👍; (b) *"saved a crop / animal / got a fair price"* follow-up; (c) Pashu-1962 connect rate in emergencies. |
+| **Quality standard** | Deterministic engine `chitti_kisan_engine.js` (soil / crop / irrigation / organic + livestock checklists + symptom→1962); **honest COMING SOON for unbuilt data feeds — NEVER fabricates a price or forecast (Art-3)**; per-response widget; frontend [chitti_kisan.html](chitti_kisan.html). BO1 IMD weather + BO2 Agmarknet mandi being wired to free Govt-of-India APIs (no key). |
+| **Scope** | **Does:** crop / soil / irrigation / organic advice, livestock daily care, Pashu-1962 routing, deterministic offline guidance. **Does NOT:** fabricate prices / weather, sell inputs, replace an agronomist / vet, auto-dial. (Marketplace / B2B / scheme / IoT = Future.) |
+| **Evolution owner** | [chitti-kisan/skills/FEATURES.md](chitti-kisan/skills/FEATURES.md) + [ceos_kisan.md](ceos_kisan.md). Backend (`chitti-kisan-api`) to be provisioned. Sire reviews agronomic rules. |
+| **Stale data rule** | IMD weather per request (no cache); Agmarknet mandi daily; crop / pest calendars seasonal; vet-line numbers quarterly. |
+
+## 20. Chitti Jobs — 24/7 AI career agent
+
+| Field | Value |
+|---|---|
+| **Objective** | A no-OAuth career agent that finds matching jobs, scores resume-vs-JD (ATS), drafts each application for the user to send themselves, and tracks the pipeline — fresher to CXO. |
+| **Primary user** | Indian job-seeker without a paid career service — fresher, mid-career switcher, returning professional. |
+| **Success metric** | (a) ATS-match lift on applied roles; (b) interview / reply rate from drafted applications; (c) pipeline-completion (apps not falling through the cracks). |
+| **Quality standard** | BO1–BO11 certified (41/41 tests + BO11 Kanban `tools/cert_jobs_bo11.mjs` 11/11); **Art-5 send-confirm — Chitti NEVER auto-sends** (mailto + .ics, user sends from their own email); ATS 70% gate with honest *"below 70%, add X"* coaching; profile / resume stay on device; DeepSeek-only drafting; per-response widget; sticky *"career assistant — not employer"* disclaimer; ← Vaani header. Frontend [chitti_jobs.html](chitti_jobs.html) (live); backend `chitti-jobs-api` + Turso provisioning. |
+| **Scope** | **Does:** Naukri / Indeed RSS + manual paste, level classifier, ATS scoring + gate, DeepSeek draft, mailto / .ics, CRM + Kanban pipeline. **Does NOT:** auto-apply, auto-send, fabricate experience, share the profile, OAuth into accounts. (BO12–15 scrapers / Calendar API = deferred — need new integrations.) |
+| **Evolution owner** | [CEOS_CHITTI_JOBS_v2.md](CEOS_CHITTI_JOBS_v2.md) + [chitti-jobs/](chitti-jobs/). Sire approves new job sources + scrapers. |
+| **Stale data rule** | RSS poll daily; pipeline statuses user-driven; ATS keyword model reviewed per job-market shift. |
+
+## 21. Chitti Empowerment — daily wisdom & Ikigai (DESIGN STAGE)
+
+| Field | Value |
+|---|---|
+| **Objective** | A daily morning card of culturally-rooted wisdom (Ikigai, festivals, birthdays, book-coaching) that nudges purpose and confidence — per [ceos_empowerment.md](ceos_empowerment.md). |
+| **Primary user** | Any Indian wanting a daily dose of motivation / purpose in their language. |
+| **Success metric** | (a) daily-open / streak; (b) *"started my day better"* 👍; (c) share rate of the morning card. |
+| **Quality standard** | **HONEST STATUS — design-stage.** `ceos_empowerment.md` exists but **0/12 BOs are built and there is NO frontend yet** (`chitti_haq_ka_paisa.html` is a *different* product — a govt welfare-scheme finder, not this). When built: deterministic quote / festival / birthday engine, consent-gated reminders (Golden Rule), per-response widget, never a paywall. Until then this row is a **placeholder, not a shipped product** (CTO Oath — honest stubs over fake demos). |
+| **Scope** | **Will do:** morning Ikigai card, festival + birthday / anniversary wishes, book-coaching moments, persona detection. **Will NOT:** read contacts without consent, auto-send messages (Golden Rule), claim it is built before it is. |
+| **Evolution owner** | [ceos_empowerment.md](ceos_empowerment.md) → BUILD_ORDER. Sire green-lights the build. |
+| **Stale data rule** | Quote / festival / book content reviewed before each build milestone; festival calendar annual. No live data until built. |
 
 ---
 
