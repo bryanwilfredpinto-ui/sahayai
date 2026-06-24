@@ -192,7 +192,7 @@ Chitti ISL is India's first AI-powered Indian Sign Language companion. It is NOT
 
 | BO | What | Priority | Hours |
 |---|---|---|---|
-| BO1 | ISL grammar engine (SOV conversion) | 🔴 HIGH | 4h |
+| BO1 | ISL grammar engine (SOV conversion) | ✅ DONE — `chitti_isl_grammar.js` gloss(): SOV reorder + time-first + WH/NEG-last + pronoun map; honesty note (never claims certified ISL). Test `tools/test_isl_grammar.mjs` 18/18 + cert `tools/cert_isl_bo1.mjs` 9/9 (2026-06-24) | 4h |
 | BO2 | Community ISL video contribution platform | 🔴 HIGH | 4h |
 | BO3 | ISL Hall of Fame | 🔴 HIGH | 1h |
 | BO4 | ISL learning course (hearing users, 30 days) | 🟡 MEDIUM | 5h |

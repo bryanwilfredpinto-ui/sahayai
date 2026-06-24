@@ -183,6 +183,17 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:600}
       <button class="try-button" id="custom-render" data-i18n="show-isl">Show ISL</button>
       <div id="custom-out" style="margin-top:10px"></div>
     </div>
+    <!-- BO1 — ISL grammar engine (SOV) demo -->
+    <div class="try-card" data-chitti-response="isl-grammar" data-chitti-section="ISL grammar (SOV)">
+      <h3 data-i18n="4-isl-grammar-sov">4. ISL grammar (SOV order)</h3>
+      <p>ISL is not English-on-the-hands — it uses <strong>Subject–Object–Verb</strong> order, puts time first, and negation/questions last. Type an English sentence and Chitti shows the ISL <em>gloss</em> order it will sign in.</p>
+      <input class="try-input" id="isl-gram-in" type="text"
+             placeholder="e.g. I am going to school tomorrow" data-i18n-placeholder="isl-grammar-placeholder"
+             value="I am going to school tomorrow"
+             aria-label="English sentence to convert to ISL gloss order">
+      <button class="try-button" id="isl-gram-go" data-i18n="show-isl-order">Show ISL order</button>
+      <div id="isl-gram-out" style="margin-top:10px" role="region" aria-live="polite" aria-atomic="true"></div>
+    </div>
   </section>
 
   <!-- DICTIONARY -->
@@ -333,6 +344,27 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:600}
 })();
 </script>
 <script src="chitti_isl.js"></script>
+<!-- BO1 — ISL grammar (SOV) engine + demo wiring -->
+<script src="chitti_isl_grammar.js"></script>
+<script>
+(function(){
+  var E = window.ChittiISLGrammar; if(!E) return;
+  var inp = document.getElementById('isl-gram-in'), btn = document.getElementById('isl-gram-go'), out = document.getElementById('isl-gram-out');
+  if(!btn || !out) return;
+  function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];}); }
+  function run(){
+    var r = E.gloss((inp && inp.value) || '');
+    if(!r.gloss.length){ out.textContent = 'Type a sentence first.'; return; }
+    var chips = r.gloss.map(function(w){ return '<span style="display:inline-block;background:#0E2344;color:#fff;border-radius:8px;padding:6px 11px;margin:3px 5px 3px 0;font-weight:800;font-size:14px;letter-spacing:.5px">'+esc(w)+'</span>'; }).join('');
+    out.innerHTML = '<div style="font-size:12px;color:#475569;margin-bottom:4px">ISL gloss (SOV):</div>'
+      + '<div>'+chips+'</div>'
+      + '<div style="margin-top:8px;font-size:12px;color:#7a7466">'+esc(r.note)+'</div>';
+    try { if(window.Chitti&&Chitti.a11y&&Chitti.a11y.speak) Chitti.a11y.speak('ISL order: '+r.glossString); } catch(e){}
+  }
+  btn.addEventListener('click', run);
+  if(inp) inp.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+})();
+</script>
 <script src="chitti_i18n.js"></script>
 </body>
 </html>
