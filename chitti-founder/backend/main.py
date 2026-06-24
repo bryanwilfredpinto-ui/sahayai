@@ -1484,7 +1484,7 @@ CEOS_CHITTIS = [
     "vaani", "medupi", "ca", "legal", "government", "news", "news_ai", "upi",
     "scanner", "fundamentals", "psychology", "logo_video", "health_file",
     "empowerment", "2wheeler", "4wheeler", "fashion", "voice_factory",
-    "founder", "isl", "kisan",
+    "founder", "isl", "kisan", "shares",
 ]
 
 

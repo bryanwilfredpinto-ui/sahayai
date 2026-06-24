@@ -7,7 +7,7 @@
 **Trigger:** Sire — "Rebuild Chitti 2-Wheeler Mechanic completely … research 20 apps + 20 AI apps
 … answer the BEFORE-CEOS gate … build it, no questions asked, I'll only reply once you say Product
 completed." Built in the **fresh** folder [chitti-mechanic-2w/](chitti-mechanic-2w/); legacy
-`chitti-2wheeler/` kept untouched until retired.
+`chitti-2wheeler/` retired 2026-06-24 (`chitti-mechanic-2w/` is canonical).
 
 Process honoured the BEFORE-CEOS Master Product Creation Rule first: 20+20 app research
 ([CHITTI_2W_MECHANIC_RESEARCH.md](CHITTI_2W_MECHANIC_RESEARCH.md)) → product justification
@@ -647,7 +647,7 @@ A page earns 🟢 GREEN for a gate only after the corresponding check passes on 
 |---|---|
 | [chitti-upi/backend/main.py](chitti-upi/backend/main.py) | New dedicated SQLAlchemy engine `sqlite:////tmp/chitti_upi_quality.db`; `app.config["CHITTI_HOOKS"] = HookRegistry(...)`; `install_request_timing(...)` now passes a real `obs` instead of `None`. |
 | [chitti-scanner/backend/main.py](chitti-scanner/backend/main.py) | Same pattern as upi — dedicated `/tmp/chitti_scanner_quality.db` engine; full quality stack. |
-| [chitti-2wheeler/backend/main.py](chitti-2wheeler/backend/main.py) | `app.config["CHITTI_HOOKS"] = HookRegistry(...)` added next to existing `Observability(...)`. |
+| `chitti-2wheeler/backend/main.py` _(folder retired 2026-06-24)_ | `app.config["CHITTI_HOOKS"] = HookRegistry(...)` added next to existing `Observability(...)`. |
 | [chitti-4wheeler/backend/main.py](chitti-4wheeler/backend/main.py) | Same as 2wheeler. |
 | [chitti-news-ai/backend/main.py](chitti-news-ai/backend/main.py) | Same — defensive registration so the substrate is ready when services move past 501 skeletons. |
 
@@ -664,7 +664,7 @@ A page earns 🟢 GREEN for a gate only after the corresponding check passes on 
 |---|---|---|
 | [chitti-upi/backend/services/upi_service.py](chitti-upi/backend/services/upi_service.py) | `check()` | `compliance_inject=False` because the model returns a strict JSON object — disclaimer rides on `legal_lines` field outside the JSON. |
 | [chitti-scanner/backend/services/scanner_service.py](chitti-scanner/backend/services/scanner_service.py) | `analyze_text()` + `analyze_image()` (vision) | Both `compliance_inject=False`; disclaimer rides on `legal_disclaimer` field. |
-| [chitti-2wheeler/backend/services/deepseek_client.py](chitti-2wheeler/backend/services/deepseek_client.py) | `ask()` | Profile blurb stays in the closure so the rails only see the user question. |
+| `chitti-2wheeler/backend/services/deepseek_client.py` _(folder retired 2026-06-24)_ | `ask()` | Profile blurb stays in the closure so the rails only see the user question. |
 | [chitti-4wheeler/backend/services/deepseek_client.py](chitti-4wheeler/backend/services/deepseek_client.py) | `ask()` | Same. |
 
 ---
