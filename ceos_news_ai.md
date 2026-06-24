@@ -175,7 +175,7 @@ User gives a big learning goal. Multiple AI agents each learn one part — cours
 | 16 | Career Path Mapper (profession → roadmap → certifications) | ⭕ BUILD |
 | 17 | Indian Analogy Engine (profession-specific examples) | ⭕ BUILD |
 | 18 | Course Digestion Engine (Chitti reads course → teaches user) | ⭕ BUILD |
-| 19 | 60-day structured certification coaching | ⭕ BUILD |
+| 19 | 60-day structured certification coaching | ✅ LIVE (BO5, 2026-06-24) — deterministic Day 1–60 engine, 26/26 + cert 10/10 |
 | 20 | Daily 10-minute voice lesson + streak | ⭕ BUILD |
 | 21 | Progress tracker + memory (never lost between sessions) | ⭕ BUILD |
 | 22 | Profession Matrix (10 professions, specific cert paths) | ⭕ BUILD |
@@ -268,7 +268,7 @@ TA/HR, Farmer, Doctor, Developer, Driver, Teacher, Accountant, Homemaker, Studen
 | BO2 | Career Path Mapper — profession → specific cert roadmap per matrix | 🔴 HIGH | 3h |
 | BO3 | Indian Analogy Engine — detect profession → select analogy set → inject into every explanation | 🔴 HIGH | 4h |
 | BO4 | Course Digestion Engine — Chitti reads course URL/content → builds lesson plan | 🔴 HIGH | 6h |
-| BO5 | 60-day certification coach — Day 1-60 lesson structure + daily delivery | 🔴 HIGH | 4h |
+| BO5 | 60-day certification coach — Day 1-60 lesson structure + daily delivery | ✅ DONE — `cnai_cert_coach.js` (6 phases · weekly reviews · milestones · daily 10-min task · progress+streak); test `tools/test_cnai_cert_coach.mjs` 26/26 + cert `tools/cert_news_ai_bo5.mjs` 10/10 (2026-06-24). Structure deterministic; lesson prose = DeepSeek runtime | 4h |
 | BO6 | Progress tracker + streak + memory integration | 🔴 HIGH | 2h |
 | BO7 | Voice quiz engine — 2 questions per lesson, voice input accepted | 🟡 MEDIUM | 3h |
 | BO8 | Profession Matrix UI — tap profession → instant career path + top 3 free certs | 🟡 MEDIUM | 2h |
