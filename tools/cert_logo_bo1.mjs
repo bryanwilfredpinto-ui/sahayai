@@ -38,6 +38,15 @@ const back = await page.evaluate(() => {
 ok('← Vaani back control present', back.ok, `text="${back.text}" h=${back.h}px`);
 ok('← Vaani tap target >= 44px', back.h >= 44, `${back.h}px`);
 
+// Real-world: Vaani passes the RAW sentence, not a pre-isolated name. The page must
+// extract the brand (drop command/filler words) rather than dump the whole sentence.
+const sentencePayload = Buffer.from(JSON.stringify({ content: 'logo banao mere Sharma General Store ka', lang: 'hi' }), 'utf8').toString('base64');
+const sent = await ctx.newPage();
+await sent.goto(base + '?from=vaani&input=' + encodeURIComponent(sentencePayload), { waitUntil: 'load' });
+await sent.waitForTimeout(1200);
+const sbrand = await sent.evaluate(() => (document.getElementById('brand') || {}).value);
+ok('Extracts brand from a raw command sentence (drops "logo"/"banao")', /sharma/i.test(sbrand) && !/\b(logo|banao)\b/i.test(sbrand), `brand="${sbrand}"`);
+
 // Negative control: WITHOUT ?from=vaani, brand keeps its own default (no spurious prefill note)
 const plain = await ctx.newPage();
 await plain.goto(base, { waitUntil: 'load' });

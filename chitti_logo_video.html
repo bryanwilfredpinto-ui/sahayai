@@ -2379,14 +2379,40 @@
        The ← Vaani back button itself is injected by the chitti_a11y.js substrate. -->
   <script>
   (function(){
+    // Vaani sends the RAW conversation text in `content` (e.g. "logo banao mere
+    // Sharma General Store ka"). Feeding that whole sentence into the brand field
+    // (which drives the generator) makes a bad logo, so extract the likely brand
+    // name deterministically: a quoted span wins; else drop command / filler /
+    // connector words (EN · Hindi · Hinglish) and keep the rest. A clean name that
+    // Vaani already isolated (e.g. "Saraswati Kirana") passes through untouched.
+    var STOP = {};
+    ('logo video poster banner design banao banado bana banade banadijiye banwao do dijiye chahiye chaiye karo kardo kar dedo de create make generate '
+     + 'mera meri mere apne apna apni hamara hamari my for the a an ek please plz chitti '
+     + 'store dukaan dukan shop business company brand naam name ka ki ke liye hetu wala wali ko se me mein hai').split(/\s+/)
+      .forEach(function(w){ STOP[w] = 1; });
+    function extractBrand(text){
+      var t = String(text||'').trim(); if(!t) return '';
+      var q = t.match(/["'“”‘’]([^"'“”‘’]{2,60})["'“”‘’]/);   // quoted span wins
+      if(q && q[1].trim()) return q[1].trim().slice(0,80);
+      var toks = t.replace(/[।.,!?;:"'“”‘’()]/g,' ').split(/\s+/).filter(Boolean);
+      var kept = toks.filter(function(w){ return !STOP[w.toLowerCase()]; });
+      var brand = kept.join(' ').trim();
+      return (brand || t).slice(0,80);   // honest fallback: never blank if input wasn't
+    }
     function decodeInput(raw){
       if(!raw) return null;
       try{ var j = JSON.parse(decodeURIComponent(escape(atob(raw))));
-           if(j){ if(typeof j.content==='string') return {brand:j.content};
-                  if(j.brand) return {brand:j.brand, tagline:j.tagline};
-                  if(typeof j.input==='string') return {brand:j.input}; } }catch(e){}
-      try{ var s = decodeURIComponent(escape(atob(raw))); if(s) return {brand:s}; }catch(e2){}
-      try{ return {brand: decodeURIComponent(raw)}; }catch(e3){ return {brand: String(raw)}; }
+           if(j){ var lang = j.lang || (j.facts && j.facts.lang) || '';
+                  if(j.brand) return {brand:j.brand, tagline:j.tagline, lang:lang};
+                  if(typeof j.content==='string') return {brand:extractBrand(j.content), lang:lang};
+                  if(typeof j.input==='string') return {brand:extractBrand(j.input), lang:lang}; } }catch(e){}
+      try{ var s = decodeURIComponent(escape(atob(raw))); if(s) return {brand:extractBrand(s)}; }catch(e2){}
+      try{ return {brand: extractBrand(decodeURIComponent(raw))}; }catch(e3){ return {brand: extractBrand(raw)}; }
+    }
+    function applyLang(lang){
+      if(!lang) return;
+      try{ if(window.Chitti && Chitti.a11y && Chitti.a11y.translate){ Chitti.a11y.translate(lang); } }catch(e){}
+      try{ if(typeof window.changeLanguage==='function'){ window.changeLanguage(lang); } }catch(e){}
     }
     function run(){
       try{
@@ -2395,6 +2421,7 @@
         var data = decodeInput(p.get('input'));
         var $brand = document.getElementById('brand');
         if(!$brand) return;
+        if(data && data.lang) applyLang(data.lang);
         if(data && data.brand){
           $brand.value = String(data.brand).slice(0,80);
           $brand.dispatchEvent(new Event('input',{bubbles:true}));
@@ -2406,11 +2433,12 @@
           note.id = 'vaani-prefill-note';
           note.setAttribute('role','status');
           note.style.cssText = 'background:#fff3e6;border:1px solid #E86A17;border-radius:10px;padding:8px 12px;margin:8px 0;font-size:13.5px;color:#7a3d09;font-weight:600';
-          note.textContent = '🎙️ Opened from Chitti Vaani — your business name is filled in. Tap “Make my logo” when ready.';
+          // Honest: it's a best-effort guess from the conversation, not a certainty.
+          note.textContent = '🎙️ Opened from Chitti Vaani — Chitti filled in the name from your chat. Please check it and edit if needed, then tap “Make my logo”.';
           $brand.parentNode.insertBefore(note, $brand);
         }
         try{ $brand.focus(); }catch(e){}
-        try{ if(window.Chitti&&Chitti.a11y&&Chitti.a11y.speak) Chitti.a11y.speak('Opened from Vaani. Business name filled in: '+$brand.value); }catch(e){}
+        try{ if(window.Chitti&&Chitti.a11y&&Chitti.a11y.speak) Chitti.a11y.speak('Opened from Vaani. I filled in the name: '+$brand.value+'. Please check and edit if needed.'); }catch(e){}
       }catch(e){}
     }
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(run,120); });
