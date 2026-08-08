@@ -130,7 +130,22 @@
       'Fix & Maintain': { hi: 'ठीक करें और रखरखाव', kn: 'ಸರಿಪಡಿಸಿ ಮತ್ತು ನಿರ್ವಹಣೆ' },
       'Buy & Sell': { hi: 'ख़रीदें और बेचें', kn: 'ಖರೀದಿ ಮತ್ತು ಮಾರಾಟ' },
       'Money & Papers': { hi: 'पैसा और कागज़ात', kn: 'ಹಣ ಮತ್ತು ದಾಖಲೆಗಳು' },
-      'Help & Learn': { hi: 'मदद और सीखें', kn: 'ಸಹಾಯ ಮತ್ತು ಕಲಿಯಿರಿ' }
+      'Help & Learn': { hi: 'मदद और सीखें', kn: 'ಸಹಾಯ ಮತ್ತು ಕಲಿಯಿರಿ' },
+      // QA round-3 / competition build — new feature labels
+      'Describe the problem (type or speak)': { hi: 'समस्या बताएँ (लिखें या बोलें)', kn: 'ಸಮಸ್ಯೆ ತಿಳಿಸಿ (ಬರೆಯಿರಿ ಅಥವಾ ಮಾತನಾಡಿ)' },
+      '…or pick a symptom': { hi: '…या लक्षण चुनें', kn: '…ಅಥವಾ ಲಕ್ಷಣ ಆಯ್ಕೆಮಾಡಿ' },
+      '🩺 Tell Chitti': { hi: '🩺 चिट्टी को बताएँ', kn: '🩺 ಚಿಟ್ಟಿಗೆ ಹೇಳಿ' },
+      '🎙️ Speak': { hi: '🎙️ बोलें', kn: '🎙️ ಮಾತನಾಡಿ' },
+      'Official RTO & documents': { hi: 'आधिकारिक RTO और दस्तावेज़', kn: 'ಅಧಿಕೃತ RTO ಮತ್ತು ದಾಖಲೆಗಳು' },
+      'What should each service cost?': { hi: 'हर सर्विस का कितना खर्च होना चाहिए?', kn: 'ಪ್ರತಿ ಸೇವೆಗೆ ಎಷ್ಟು ಖರ್ಚಾಗಬೇಕು?' },
+      '🧾 Show fair service costs': { hi: '🧾 उचित सर्विस खर्च दिखाएँ', kn: '🧾 ನ್ಯಾಯಯುತ ಸೇವಾ ವೆಚ್ಚ ತೋರಿಸಿ' },
+      'Spare parts — fair price & genuine check': { hi: 'स्पेयर पार्ट्स — उचित कीमत और असली जाँच', kn: 'ಬಿಡಿಭಾಗಗಳು — ನ್ಯಾಯ ಬೆಲೆ ಮತ್ತು ಅಸಲಿ ಪರಿಶೀಲನೆ' },
+      '🔩 Fair price + genuine check': { hi: '🔩 उचित कीमत + असली जाँच', kn: '🔩 ನ್ಯಾಯ ಬೆಲೆ + ಅಸಲಿ ಪರಿಶೀಲನೆ' },
+      'EV battery health & range': { hi: 'EV बैटरी सेहत और रेंज', kn: 'EV ಬ್ಯಾಟರಿ ಆರೋಗ್ಯ ಮತ್ತು ರೇಂಜ್' },
+      '⚡ EV health & real range': { hi: '⚡ EV सेहत और असली रेंज', kn: '⚡ EV ಆರೋಗ್ಯ ಮತ್ತು ನಿಜ ರೇಂಜ್' },
+      '🔌 Find charging station': { hi: '🔌 चार्जिंग स्टेशन खोजें', kn: '🔌 ಚಾರ್ಜಿಂಗ್ ಸ್ಟೇಷನ್ ಹುಡುಕಿ' },
+      'Chain set km done': { hi: 'चेन सेट किमी पूरे', kn: 'ಚೈನ್ ಸೆಟ್ ಕಿಮೀ ಆಗಿದೆ' },
+      'Last ridden (date)': { hi: 'आख़िरी बार चलाई (तारीख़)', kn: 'ಕೊನೆಯ ಬಾರಿ ಓಡಿಸಿದ್ದು (ದಿನಾಂಕ)' }
     };
     window.Chitti.lang.extend(T);
   }

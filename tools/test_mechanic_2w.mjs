@@ -130,6 +130,31 @@ const ics = E.icsForReminder('Insurance renewal', '2026-07-15');
 ok('ics is a valid VCALENDAR', ics && ics.includes('BEGIN:VCALENDAR') && ics.includes('DTSTART') && ics.includes('END:VCALENDAR'));
 ok('ics null for no date (honest)', E.icsForReminder('x', '') === null);
 
+// ── 18. Competition build #1 — free-text symptom + crisis (never auto-dial) ──
+ok('#1 coachFromText crisis detected', E.coachFromText('i met with an accident, injured').crisis === true);
+ok('#1 crisis never auto-dials (Golden Rule)', JSON.stringify(E.coachFromText('crash').risks).toLowerCase().includes('never auto-dial'));
+ok('#1 coachFromText maps brake → mechanic', E.coachFromText('my brakes are not stopping').tier === 'mechanic');
+ok('#1 coachFromText unknown → no guess', E.coachFromText('asdfqwer zzz').found === false);
+// ── 19. #2 chain wear ──
+ok('#2 chain set worn at 15000km → bad', E.chainStatus({ chainKm: 15000 }).status === 'bad');
+ok('#2 chain fresh → ok', E.chainStatus({ chainKm: 3000, chainKmSinceLube: 100 }).status === 'ok');
+// ── 20. #3 unused-bike reminder ──
+ok('#3 unused reminder fires after 60 days', E.reminders({ lastRideDate: '2026-03-01' }, '2026-06-16').items.some(i => i.kind === 'Unused'));
+ok('#3 no unused reminder when recently ridden', !E.reminders({ lastRideDate: '2026-06-10' }, '2026-06-16').items.some(i => i.kind === 'Unused'));
+// ── 21. #5 compliance + #7 boodmo deep-links ──
+ok('#5 compliance has gov portals', ['mparivahan', 'echallan', 'digilocker', 'fastag'].every(k => /^https:\/\//.test(E.links().compliance[k])));
+ok('#5 verify brands present', /ngkntk/.test(E.links().verify.ngk) && /bosch/.test(E.links().verify.bosch));
+ok('#7 boodmo search link', /boodmo\.com\/search/.test(E.links().boodmo('brake')));
+// ── 22. #6 EV intelligence ──
+const ev = E.evIntel({ batteryMonths: 24, evClaimedRangeKm: 120 });
+ok('#6 EV degrades with age (health<100)', ev.batteryHealthPct < 100 && ev.estRealRangeKm < 120);
+ok('#6 EV charging maps link', /charging/i.test(decodeURIComponent(E.nearestQuery('charging').url)));
+// ── 23. #7 parts price + red flags ──
+ok('#7 partsPrice returns options + red flags', E.partsPrice('brake').options.length >= 1 && E.partsPrice('brake').redFlags.length >= 4);
+ok('#7 partsPrice generic returns several', E.partsPrice('').options.length >= 5);
+// ── 24. #8 service cost estimator ──
+ok('#8 serviceCosts lists items with cost', E.serviceCosts().items.length >= 8 && E.serviceCosts().items.every(i => i.cost));
+
 console.log(`\nChitti Mechanic 2W engine gold tests: ${pass} passed, ${fail} failed`);
 if (fail) { console.log('FAILURES:\n - ' + fails.join('\n - ')); process.exit(1); }
 console.log('GOLD_RESULT:{"pass":' + pass + ',"fail":0}');

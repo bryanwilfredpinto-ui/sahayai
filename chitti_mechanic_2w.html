@@ -110,6 +110,19 @@
   html[data-theme="dark"] .res-box.ok{background:#16271a}html[data-theme="dark"] .res-box.warning{background:#2a2212}html[data-theme="dark"] .res-box.bad{background:#2a1618}html[data-theme="dark"] .res-box.info{background:#161f2e}
   html[data-theme="dark"] .disc{background:#2a2412;color:#ffdf8a;border-bottom-color:#6b5413}
   html[data-theme="dark"] .card .sub,html[data-theme="dark"] .vh-note,html[data-theme="dark"] .prov,html[data-theme="dark"] footer{color:#b9b9c2}
+  /* home stats banner (#4) */
+  .home-stats{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+  .home-stat{flex:1;min-width:130px;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;background:#fafafa}
+  .home-stat .hs-k{font-size:11.5px;color:#5a5a5a;font-weight:700}
+  .home-stat .hs-v{font-size:18px;font-weight:900;color:var(--navy)}
+  .home-stat.ok{border-color:var(--green);background:#f0faf0}.home-stat.warning{border-color:#c97a00;background:#fff8ec}.home-stat.bad{border-color:var(--red);background:#fdf0f0}
+  html[data-theme="dark"] .home-stat{background:#1e1e25}
+  /* vehicle twin visual timeline (#9) */
+  .vt-line{list-style:none;margin:8px 0 0;padding:0 0 0 8px;border-left:3px solid var(--saffron)}
+  .vt-item{position:relative;padding:0 0 12px 16px;font-size:14px}
+  .vt-item::before{content:"";position:absolute;left:-9px;top:3px;width:13px;height:13px;border-radius:50%;background:var(--saffron);border:2px solid #fff}
+  .vt-item .vt-t{font-weight:800;color:var(--navy)}
+  .vt-item .vt-d{font-size:12px;color:#5a5a5a}
 </style>
 <!-- LANGUAGE: Vaani-canonical. chitti_lang.js owns #lang-select (26 languages, auto-translate whole UI). -->
 <script src="chitti_lang.js" defer></script>
@@ -160,6 +173,7 @@
   <!-- Home grid — 5 buckets so the 15 tabs aren't a flat scroller (QA finding) -->
   <section class="card" data-chitti-response="mech-home" data-chitti-section="What do you need today?">
     <h2><span aria-hidden="true">🧭</span> What do you need today?</h2>
+    <div class="home-stats" id="home-stats" role="status" aria-live="polite" data-chitti-no-translate></div>
     <div class="home-grid">
       <button class="home-card" type="button" onclick="mechTab('bike')"><span class="hc-ic" aria-hidden="true">🏍️</span><span class="hc-t">My Bike &amp; Health</span></button>
       <button class="home-card" type="button" onclick="mechTab('doctor')"><span class="hc-ic" aria-hidden="true">🔧</span><span class="hc-t">Fix &amp; Maintain</span></button>
@@ -213,6 +227,10 @@
         <div><label class="fl" for="bk-tyrekm">Tyre km done</label><input class="fi" id="bk-tyrekm" type="number" inputmode="numeric" placeholder="8000"></div>
         <div><label class="fl" for="bk-batt">Battery age (months)</label><input class="fi" id="bk-batt" type="number" inputmode="numeric" placeholder="18"></div>
       </div>
+      <div class="row">
+        <div><label class="fl" for="bk-chainkm">Chain set km done</label><input class="fi" id="bk-chainkm" type="number" inputmode="numeric" placeholder="6000"></div>
+        <div><label class="fl" for="bk-lastride">Last ridden (date)</label><input class="fi" id="bk-lastride" type="date"></div>
+      </div>
       <label class="fl" for="bk-doc">📎 Attach a document photo (insurance / PUC / RC) — stored on this device only</label>
       <div class="row">
         <div><select class="fs" id="bk-doctype" aria-label="Document type"><option value="Insurance">Insurance</option><option value="PUC">PUC</option><option value="RC">RC</option><option value="Service bill">Service bill</option></select></div>
@@ -252,8 +270,14 @@
   <section class="panel" id="panel-doctor" role="tabpanel" aria-labelledby="tab-doctor">
     <div class="card" data-chitti-response="mech-coach" data-chitti-section="Breakdown doctor">
       <h2><span aria-hidden="true">🩺</span> What is wrong with my bike?</h2>
-      <p class="sub">Pick what is happening. Chitti gives the likely cause, whether it is safe to ride, and whether you can fix it or must see a mechanic. This is a starting point, not a final diagnosis.</p>
-      <label class="fl" for="dr-sym">Symptom</label>
+      <p class="sub">Tell Chitti in your own words, or pick from the list. Chitti gives the likely cause, whether it is safe to ride, and whether you can fix it or must see a mechanic. This is a starting point, not a final diagnosis.</p>
+      <label class="fl" for="dr-text">Describe the problem (type or speak)</label>
+      <div class="row">
+        <div style="flex:3"><input class="fi" id="dr-text" placeholder="e.g. bike won't start, makes clicking sound" aria-label="Describe the problem"></div>
+        <div style="flex:0 0 auto"><button class="btn" type="button" id="dr-mic" onclick="mechMic()" aria-label="Speak the problem">🎙️ Speak</button></div>
+      </div>
+      <div class="actions" style="margin-top:6px"><button class="btn primary" type="button" onclick="mechCoachText()">🩺 Tell Chitti</button></div>
+      <label class="fl" for="dr-sym">…or pick a symptom</label>
       <select class="fs" id="dr-sym" aria-label="Choose a symptom"></select>
       <div class="actions">
         <button class="btn primary" type="button" onclick="mechCoach()">🩺 Diagnose</button>
@@ -352,6 +376,19 @@
       </div>
       <div class="result" id="r-puc" aria-live="polite"></div>
     </div>
+    <div class="card" data-chitti-response="mech-compliance" data-chitti-section="Official RTO services">
+      <h2><span aria-hidden="true">🪪</span> Official RTO &amp; documents</h2>
+      <p class="sub">One tap to the <b>official</b> government portals for RC, insurance, PUC status, e-Challan, FASTag and DigiLocker. Chitti opens the official app — it never logs in or pays for you. (Auto-pull from your reg number is COMING SOON, partner-API gated.)</p>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechCompliance('mparivahan')">🚦 RC / insurance / PUC status (mParivahan)</button>
+        <button class="btn" type="button" onclick="mechCompliance('echallan')">🧾 e-Challan</button>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button" onclick="mechCompliance('digilocker')">📂 DigiLocker</button>
+        <button class="btn" type="button" onclick="mechCompliance('fastag')">🛣️ FASTag</button>
+      </div>
+      <div class="result" id="r-compliance" aria-live="polite"></div>
+    </div>
   </section>
 
   <!-- 8. SERVICE & OIL -->
@@ -365,6 +402,25 @@
         <button class="btn" type="button" onclick="mechNearest('service')">📍 Nearest service centre</button>
       </div>
       <div class="result" id="r-service" aria-live="polite"></div>
+    </div>
+
+    <div class="card" data-chitti-response="mech-svccost" data-chitti-section="Service cost estimator">
+      <h2><span aria-hidden="true">🧾</span> What should each service cost?</h2>
+      <p class="sub">Fair cost bands for common 2W jobs — compare any workshop quote to these so you are never overcharged.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechServiceCosts()">🧾 Show fair service costs</button></div>
+      <div class="result" id="r-svccost" aria-live="polite"></div>
+    </div>
+
+    <div class="card" data-chitti-response="mech-parts" data-chitti-section="Spare parts price & genuine check">
+      <h2><span aria-hidden="true">🔩</span> Spare parts — fair price &amp; genuine check</h2>
+      <p class="sub">Type a part to see its fair price band, a genuine-vs-fake checklist, and links to compare on boodmo and verify with the brand. Insist on a GST bill + the old part back.</p>
+      <label class="fl" for="pt-q">Part</label><input class="fi" id="pt-q" placeholder="e.g. brake shoes, spark plug, battery">
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechParts()">🔩 Fair price + genuine check</button>
+        <button class="btn" type="button" onclick="mechVerify('ngk')">✅ Verify NGK plug</button>
+        <button class="btn" type="button" onclick="mechVerify('bosch')">✅ Verify Bosch part</button>
+      </div>
+      <div class="result" id="r-parts" aria-live="polite"></div>
     </div>
   </section>
 
@@ -399,6 +455,17 @@
         <button class="btn" type="button" onclick="mechLogReplace('battery')">✅ Log replacement</button>
       </div>
       <div class="result" id="r-battery" aria-live="polite"></div>
+    </div>
+
+    <div class="card" data-chitti-response="mech-ev" data-chitti-section="EV battery health & range">
+      <h2><span aria-hidden="true">⚡</span> EV battery health &amp; range <span style="font-size:12px;font-weight:700;color:#5a5a5a">(any EV brand)</span></h2>
+      <p class="sub">Universal EV health — works for Ola, Ather, TVS iQube, Chetak, any e-scooter (OEM apps are brand-locked). Estimates battery health + real range from age, and finds charging near you.</p>
+      <label class="fl" for="ev-range">Claimed range (km, from spec)</label><input class="fi" id="ev-range" type="number" inputmode="numeric" placeholder="100">
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechEv()">⚡ EV health &amp; real range</button>
+        <button class="btn" type="button" onclick="mechNearest('charging')">🔌 Find charging station</button>
+      </div>
+      <div class="result" id="r-ev" aria-live="polite"></div>
     </div>
   </section>
 
@@ -543,7 +610,8 @@
   function readBikeForm(){
     return { make:val('bk-make'), vclass:val('bk-class'), odoKm:num('bk-odo'), dailyKm:num('bk-daily'),
       insuranceExpiry:val('bk-ins'), pucExpiry:val('bk-puc'), rcExpiry:val('bk-rc'),
-      lastServiceKm:num('bk-lastkm'), tyreKm:num('bk-tyrekm'), batteryMonths:num('bk-batt') };
+      lastServiceKm:num('bk-lastkm'), tyreKm:num('bk-tyrekm'), batteryMonths:num('bk-batt'),
+      chainKm:num('bk-chainkm'), lastRideDate:val('bk-lastride') };
   }
   function fillBikeForm(v){
     if(!v) return;
@@ -552,16 +620,28 @@
     if(v.insuranceExpiry)$('bk-ins').value=v.insuranceExpiry; if(v.pucExpiry)$('bk-puc').value=v.pucExpiry;
     if(v.rcExpiry)$('bk-rc').value=v.rcExpiry; if(v.lastServiceKm)$('bk-lastkm').value=v.lastServiceKm;
     if(v.tyreKm)$('bk-tyrekm').value=v.tyreKm; if(v.batteryMonths)$('bk-batt').value=v.batteryMonths;
+    if(v.chainKm&&$('bk-chainkm'))$('bk-chainkm').value=v.chainKm; if(v.lastRideDate&&$('bk-lastride'))$('bk-lastride').value=v.lastRideDate;
   }
+  // #4 — home savings + ownership health number
+  window.mechHomeStats=function(){
+    var host=$('home-stats'); if(!host)return; var v=E().vault.load();
+    var sav=E().savings(v.savings||[]); var sc=E().scores(v);
+    var overall=Math.round((sc.maintenance+sc.safety+sc.resale)/3);
+    var hcls=overall>=80?'ok':overall>=60?'warning':'bad';
+    host.innerHTML='<div class="home-stat ok"><div class="hs-k">💸 Saved this year</div><div class="hs-v">₹'+Number(sav.total).toLocaleString('en-IN')+' <span style="font-size:12px;font-weight:700">/ ₹10,000</span></div></div>'+
+      '<div class="home-stat '+hcls+'"><div class="hs-k">🩺 Ownership health</div><div class="hs-v">'+overall+'/100</div></div>';
+  };
   window.mechSaveBike=function(){
     var cur=E().vault.load(); var patch=readBikeForm(); for(var k in patch) cur[k]=patch[k]; E().vault.save(cur);
     render('r-bike',{status:'ok',big:'Saved on this device ✅',text:'Chitti will now watch '+(patch.make||'your bike')+' and remind you in time. Open the Reminders tab anytime.',
       lines:['Stored locally only — nothing is uploaded.','Tap "Chitti forget" to erase everything.'], confidence:'high', sources:['Local device storage']});
+    mechHomeStats();
   };
   window.mechForget=function(){
     E().vault.forget(); fillBikeForm({make:'',vclass:'scooter'});
-    ['bk-make','bk-odo','bk-daily','bk-ins','bk-puc','bk-rc','bk-lastkm','bk-tyrekm','bk-batt'].forEach(function(i){var e=$(i); if(e)e.value='';});
+    ['bk-make','bk-odo','bk-daily','bk-ins','bk-puc','bk-rc','bk-lastkm','bk-tyrekm','bk-batt','bk-chainkm','bk-lastride','ev-range'].forEach(function(i){var e=$(i); if(e)e.value='';});
     render('r-bike',{status:'info',big:'Forgotten 🗑️',text:'Every saved detail has been erased from this device.',confidence:'high',sources:['Local device storage']});
+    mechHomeStats();
   };
   window.mechScores=function(){ var r=E().scores(); render('r-bike',{status:'info',big:r.summary,lines:risks(r),confidence:r.confidence,sources:r.sources}); };
 
@@ -613,17 +693,16 @@
   var ZONE={ ok:{w:'Good'}, warning:{w:'Check soon'}, bad:{w:'Needs attention'} };
   window.mechHealth=function(){
     var v=E().vault.load();
-    var bat=E().batteryStatus(v), ty=E().tyreStatus(v), sc=E().scores(v);
+    var bat=E().batteryStatus(v), ty=E().tyreStatus(v), sc=E().scores(v), ch=E().chainStatus(v);
     var since=(Number(v.odoKm)||0)-(Number(v.lastServiceKm)||0);
     var eng= since>=3000?'warning':'ok';
     var brk= since>=2800?'warning':'ok';
-    var chn= (Number(v.chainKmSinceLube)||0)>=500?'warning':'ok';
     var sys=[
       {ic:SVG.engine,name:'Engine',st:eng,note: since>=3000?'Oil/service overdue':'Service on track'},
       {ic:SVG.battery,name:'Battery',st:bat.status,note:bat.spec+' · '+bat.ageMonths+'/'+bat.expectedLifeMonths+' mo'},
       {ic:SVG.tyre,name:'Tyres',st:ty.status,note: ty.replace?'Replace now':'Within life'},
       {ic:SVG.brake,name:'Brakes',st:brk,note:'Inspect at every service'},
-      {ic:SVG.chain,name:'Chain',st:chn,note:'Clean + lube every 500 km'}
+      {ic:SVG.chain,name:'Chain',st:ch.status,note: ch.wear!=='ok'?('Set '+ch.km+'/'+ch.replaceKm+' km — wear'):'Lube every 500 km'}
     ];
     var host=$('r-health'); host.innerHTML='';
     var box=document.createElement('div'); var worst= sys.some(function(s){return s.st==='bad';})?'bad':sys.some(function(s){return s.st==='warning';})?'warning':'ok';
@@ -687,7 +766,7 @@
     box.appendChild(a); if(note){ var p=document.createElement('p'); p.style.fontSize='13px'; p.textContent=note; box.appendChild(p); }
     host.appendChild(box);
   }
-  var NEAR_HOST={ puc:'r-puc', service:'r-service', mechanic:'r-coach', tyre:'r-tyre' };
+  var NEAR_HOST={ puc:'r-puc', service:'r-service', mechanic:'r-coach', tyre:'r-tyre', charging:'r-ev' };
   window.mechNearest=function(kind){
     var host=NEAR_HOST[kind]||'r-bike';
     function show(opts){ var r=E().nearestQuery(kind,opts); linkBox(host,'📍',r.label,r.url,r.risks[0]); }
@@ -799,10 +878,71 @@
   window.mechAddSaving=function(){
     var v=E().vault.load(); v.savings=v.savings||[]; var amt=num('sv-amt'); var cat=val('sv-cat')||'Saving';
     if(amt>0){ v.savings.push({category:cat,amount:amt}); E().vault.save(v); }
-    mechSavings();
+    mechSavings(); mechHomeStats();
   };
   window.mechSavings=function(){ var v=E().vault.load(); var r=E().savings(v.savings||[]); render('r-savings',{status:'ok', big:r.summary, lines:(r.entries||[]).map(function(e){return '💸 '+e.category+': ₹'+Number(e.amount).toLocaleString('en-IN');}).concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
-  window.mechTwin=function(){ var r=E().twin(E().vault.load()); render('r-savings',{status:'info', big:r.summary, lines:['Timeline: '+r.timeline.join(' → ')].concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
+
+  // #1 — free-text symptom + crisis detection
+  window.mechCoachText=function(){
+    var r=E().coachFromText(val('dr-text'));
+    if(r.crisis){ render('r-coach',{status:'bad', big:'🆘 Emergency', text:r.summary, lines:risks(r), confidence:r.confidence, sources:r.sources, speak:r.summary}); return; }
+    if(!r.found){ render('r-coach',{status:'info', big:'Tell Chitti more', text:r.summary, lines:risks(r), confidence:r.confidence, sources:r.sources}); return; }
+    render('r-coach',{status: r.tier==='mechanic'?'bad':r.tier==='caution'?'warning':'ok', big:r.tierSym+' '+r.tierWord, text:r.summary, lines:risks(r), confidence:r.confidence, sources:r.sources});
+  };
+  window.mechMic=function(){
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ var t=$('dr-text'); if(t){t.focus(); t.placeholder='Voice not supported here — type your problem';} return; }
+    try{ var rec=new SR(); var lang=(window.Chitti&&window.Chitti.lang&&window.Chitti.lang.current())||'en'; rec.lang=lang==='en'?'en-IN':lang; rec.onresult=function(e){ $('dr-text').value=e.results[0][0].transcript; window.mechCoachText(); }; rec.start(); }catch(e){}
+  };
+  // #5 — official compliance deep-links
+  window.mechCompliance=function(kind){
+    var L=E().links().compliance; var labels={mparivahan:'RC / insurance / PUC status (mParivahan)',echallan:'e-Challan (official)',digilocker:'DigiLocker (official)',fastag:'FASTag (NPCI official)'};
+    linkBox('r-compliance','🪪','Open '+(labels[kind]||kind), L[kind]||L.mparivahan, 'Opens the official government portal. Chitti never logs in or pays for you.');
+  };
+  // #5/#7 — genuine-part verify
+  window.mechVerify=function(brand){ var V=E().links().verify; linkBox('r-parts','✅','Verify a genuine '+(brand==='ngk'?'NGK spark plug':'Bosch part'), V[brand]||V.ngk, 'Opens the brand’s official site — match the hologram/QR/serial on your part.'); };
+  // #8 — service cost estimator
+  window.mechServiceCosts=function(){
+    var r=E().serviceCosts();
+    render('r-svccost',{status:'info', big:r.summary, lines:r.items.map(function(i){return E().RULES.triage[i.tier].sym+' '+i.item+' — '+i.cost+' ('+i.every+', '+i.who+')';}).concat(risks(r)), confidence:r.confidence, sources:r.sources});
+  };
+  // #7 — spare-parts price + genuine check
+  window.mechParts=function(){
+    var r=E().partsPrice(val('pt-q'));
+    var lines=r.options.map(function(o){return '🔩 '+o.name+' — '+o.price;}).concat(['— Genuine-vs-fake red flags —']).concat(r.redFlags.map(function(f){return '⚠️ '+f;})).concat(risks(r));
+    var host=$('r-parts'); host.innerHTML='';
+    render('r-parts',{status:'info', big:r.summary, lines:lines, confidence:r.confidence, sources:r.sources});
+    var a=document.createElement('a'); a.href=r.boodmo; a.target='_blank'; a.rel='noopener'; a.textContent='🛒 Compare prices on boodmo'; a.style.cssText='display:inline-block;margin-top:8px;font-weight:800'; var box=host.querySelector('.res-box'); if(box) box.appendChild(a);
+  };
+  // #6 — EV intelligence
+  window.mechEv=function(){
+    var v=E().vault.load(); v.evClaimedRangeKm=num('ev-range')||v.evClaimedRangeKm; E().vault.save(v);
+    var r=E().evIntel(v);
+    render('r-ev',{status:r.status, big:r.summary, lines:['Battery health ≈ '+r.batteryHealthPct+'% · est. real range ≈ '+r.estRealRangeKm+' km'].concat(risks(r)), confidence:r.confidence, sources:r.sources});
+  };
+  // #9 — Vehicle Twin visual timeline
+  window.mechTwin=function(){
+    var v=E().vault.load(); var r=E().twin(v);
+    var ev=[];
+    ev.push(['🏍️ Vehicle', (v.make||'Your bike')+(v.vclass?(' · '+v.vclass):'')]);
+    if(v.odoKm) ev.push(['📍 Odometer', v.odoKm+' km']);
+    if(v.lastServiceKm) ev.push(['🔧 Last service', v.lastServiceKm+' km'+(v.lastServiceDate?(' · '+v.lastServiceDate):'')]);
+    if(v.tyreKm) ev.push(['🛞 Tyres', v.tyreKm+' km done']);
+    if(v.batteryMonths) ev.push(['🔋 Battery', v.batteryMonths+' months old']);
+    if(v.chainKm) ev.push(['⛓️ Chain set', v.chainKm+' km done']);
+    (v.docs||[]).forEach(function(d){ ev.push(['📎 '+d.type, 'document on device'+(d.savedAt?(' · '+d.savedAt):'')]); });
+    (v.savings||[]).forEach(function(s){ ev.push(['💸 Saved', s.category+': ₹'+Number(s.amount).toLocaleString('en-IN')]); });
+    if(!ev.length) ev=r.timeline.map(function(t){return [t,'add details in My Bike to fill this in'];});
+    var host=$('r-savings'); host.innerHTML='';
+    var box=document.createElement('div'); box.className='res-box info';
+    box.innerHTML='<div class="res-status"><span aria-hidden="true">🚲</span> Vehicle Twin — '+(v.make||'your bike')+' · resale readiness '+r.resaleReadiness+'/100</div>';
+    var ul=document.createElement('ul'); ul.className='vt-line';
+    ev.forEach(function(e){ var li=document.createElement('li'); li.className='vt-item'; li.innerHTML='<span class="vt-t">'+e[0]+'</span><div class="vt-d">'+e[1]+'</div>'; ul.appendChild(li); });
+    box.appendChild(ul);
+    var prov=document.createElement('div'); prov.className='prov'; prov.textContent='Stored on THIS device only (Art.4). "Chitti forget" wipes it.'; box.appendChild(prov);
+    var sp=document.createElement('div'); sp.className='sp'; var sb=document.createElement('button'); sb.className='speak-btn'; sb.type='button'; sb.textContent='🔊 Read this aloud'; sb.onclick=function(){ speak('Vehicle Twin. '+ev.map(function(e){return e[0]+': '+e[1];}).join('. ')); }; sp.appendChild(sb); box.appendChild(sp);
+    host.appendChild(box);
+  };
   window.mechSos=function(){ var r=E().emergency(); render('r-sos',{status:'bad', big:'🆘 '+r.numbers.join(' · '), text:r.note, lines:risks(r), confidence:r.confidence, sources:r.sources}); };
 
   // boot — populate symptom dropdown + restore saved bike
@@ -817,7 +957,8 @@
     Array.prototype.forEach.call(document.querySelectorAll('.result'),function(r){ r.setAttribute('data-chitti-no-translate',''); });
     var sel=$('dr-sym'); if(sel && !sel.options.length){ E().RULES.symptoms.forEach(function(s){ var o=document.createElement('option'); o.value=s.id; o.textContent=s.q; sel.appendChild(o); }); }
     var lsel=$('ln-mod'); if(lsel && !lsel.options.length){ E().RULES.education.forEach(function(m){ var o=document.createElement('option'); o.value=m.id; o.textContent=E().RULES.triage[m.tier].sym+' '+m.title; lsel.appendChild(o); }); }
-    fillBikeForm(E().vault.load());
+    var vb=E().vault.load(); fillBikeForm(vb); if(vb.evClaimedRangeKm&&$('ev-range'))$('ev-range').value=vb.evClaimedRangeKm;
+    mechHomeStats();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
   // Offline support for rural / 3G users (CEOS §33). Honest no-op if unsupported.
